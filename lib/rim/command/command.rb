@@ -7,6 +7,27 @@ class Command
   def initialize(processor)
     @processor = processor
   end
+
+  def project_git_dir
+    find_git_dir(".")
+  end
+
+  private
+
+  def find_git_dir(start_dir)
+    last_dir = nil
+    dir = File.expand_path(start_dir)
+    while dir != last_dir
+      if File.exist?("#{dir}/.git")
+        return dir
+      end
+      last_dir = dir
+      # returns itself on file system root
+      dir = File.dirname(dir)
+    end
+    nil
+  end
+
 end
 end
 end

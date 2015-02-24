@@ -136,6 +136,16 @@ class GitSession
     end
   end
     
+  def uncommited_changes?
+    # either no status lines are all of them due to ignored items
+    !status.lines.all?{|l| l.ignored?}
+  end
+
+  def current_branch_name
+    out = execute "git rev-parse --abbrev-ref HEAD"
+    out.strip
+  end
+
   def status(dir=nil)
     # -s            short format
     # --ignored     show ignored
