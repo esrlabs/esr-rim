@@ -28,6 +28,9 @@ class Status < Command
   private 
 
   def print_status(gs, stat)
+    # don't print the last (remote) status nodes
+    # note: this also excludes the initial commit
+    return if stat.git_rev && stat.parents.empty?
     dirty_mods = stat.modules.select{|m| m.dirty?}
     stat_info = dirty_mods.empty? ? "[   OK]" : "[DIRTY]"
     if stat.git_rev
