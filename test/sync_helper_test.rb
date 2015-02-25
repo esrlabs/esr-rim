@@ -34,8 +34,44 @@ class SyncHelperTest < Minitest::Test
       assert !File.exist?(File.join(@ws_dir, "mod1"))
       assert !File.exist?(File.join(@ws_dir, "mod2"))
       s.execute("git checkout rim/testbr")
+      log = s.execute("git log | grep \" module \"").split("\n").sort
+      assert log.size == 2
+      assert log[0].include?("mod1")
+      assert log[1].include?("mod2")
       assert File.exist?(File.join(@ws_dir, ".rim"))
       assert File.exist?(File.join(@ws_dir, "mod1"))
+      assert File.exist?(File.join(@ws_dir, "mod2"))
+    end
+  end
+
+  def test_files_are_synchronized_on_existing_branch
+    mod1_info = create_module_git("mod1")
+    mod2_info = create_module_git("mod2")
+    create_ws_git("testbr")
+    cut = RIM::SyncHelper.new(@ws_dir, [mod1_info, mod2_info])
+    cut.sync
+    File.open(File.join(@ws_remote_dir, "readme"), "w") do |f| 
+      f.write("Content") 
+    end
+    `echo ' changed' >> #{File.join(@ws_dir, "readme")}`
+    RIM::git_session(@ws_dir) do |s|
+      s.execute("git commit . -m 'Changed ws file'")
+    end
+    `echo ' changed' >> #{File.join(mod1_info.remote_url, "readme.txt")}`
+    RIM::git_session(mod1_info.remote_url) do |f|
+      f.execute("git commit . -m 'Changed mod1 file'")
+    end
+    cut.sync
+    RIM::git_session(@ws_dir) do |s|
+      s.execute("git checkout rim/testbr")
+      log = s.execute("git log | grep \" module \"").split("\n").sort
+      assert log.size == 3
+      assert log[0].include?("mod1")
+      assert log[1].include?("mod1")
+      assert log[2].include?("mod2")
+      assert File.exist?(File.join(@ws_dir, ".rim"))
+      assert File.exist?(File.join(@ws_dir, "mod1"))
+      `cat #{File.join(@ws_dir, "mod1/readme.txt")}`.start_with?("Content. changed")
       assert File.exist?(File.join(@ws_dir, "mod2"))
     end
   end
@@ -49,13 +85,13 @@ private
       File.open(File.join(@ws_remote_dir, ".gitignore"), "w") do |f| 
         f.write(".rim") 
       end
+      File.open(File.join(@ws_remote_dir, "readme"), "w") do |f|
+        f.write("Content")
+      end
       s.execute("git add .")
       s.execute("git commit -m 'Initial commit'")
     end
     `git clone #{@ws_remote_dir} #{@ws_dir}`
-    #RIM::git_session(:work_dir => ".", :git_dir => File.join(@ws_dir, ".git")) do |s|
-    #  s.execute("git clone #{@ws_remote_dir} #{@ws_dir}")
-    #end
   end
 
   def create_module_git(name, branch = "master")
@@ -71,6 +107,6 @@ private
       s.execute("git commit -m 'Initial commit'")
     end
     return RIM::ModuleInfo.new(git_dir, name, branch)
-  end  
+  end
   
 end

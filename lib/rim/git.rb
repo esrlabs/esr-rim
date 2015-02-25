@@ -10,8 +10,8 @@ class GitSession
       @work_dir = arg
       @git_dir = arg+"/.git"
     elsif arg.is_a?(Hash)
-      @work_dir = arg[:work_dir] || "."
-      @git_dir = arg[:git_dir] || @work_dir+"/.git"
+      @work_dir = arg.has_key?(:work_dir) ? arg[:work_dir] : "."
+      @git_dir = arg.has_key?(:git_dir) ? arg[:git_dir] : @work_dir+"/.git"
     end
     @logger = logger
   end
@@ -146,7 +146,8 @@ class GitSession
   def execute(cmd)
     raise "git command has to start with 'git'" unless cmd.start_with? "git "
     cmd.slice!("git ")
-    cmd = "git --git-dir=#{File.expand_path(@git_dir)} --work-tree=#{File.expand_path(@work_dir)} #{cmd} 2>&1"
+    options = (@work_dir.empty? ? "" : " --work-tree=#{File.expand_path(@work_dir)}") + (@git_dir.empty? ? "" : " --git-dir=#{File.expand_path(@git_dir)}") 
+    cmd = "git#{options} #{cmd} 2>&1"
 
     out = `#{cmd}`
     @exitstatus = $?.exitstatus

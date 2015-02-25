@@ -42,11 +42,11 @@ private
   def fetch_module
     git_path = module_git_path(@remote_path)
     FileUtils.mkdir_p git_path
-    RIM::git_session(:git_dir => git_path) do |s|
+    RIM::git_session(:git_dir => git_path, :work_dir => "") do |s|
       if !File.exist?(git_path + "/config")
         s.execute("git clone --mirror #{@module_info.remote_url} #{git_path}")
       else
-        s.execute("git fetch #{@module_info.remote_url}")
+        s.execute("git remote update")
       end
     end
   end
@@ -55,7 +55,7 @@ private
   # BEWARE: any changes to the working copy target dir will be lost!
   def export_module
     git_path = module_git_path(@remote_path)
-    RIM::git_session(:git_dir => git_path) do |s|
+    RIM::git_session(:git_dir => git_path, :work_dir => "") do |s|
       local_path = File.join(@ws_root, @module_info.local_path)
       FileUtils.rm_rf local_path if File.exist? local_path
       FileUtils.mkdir_p local_path
