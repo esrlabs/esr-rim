@@ -50,9 +50,6 @@ class SyncHelperTest < Minitest::Test
     create_ws_git("testbr")
     cut = RIM::SyncHelper.new(@ws_dir, [mod1_info, mod2_info])
     cut.sync
-    File.open(File.join(@ws_remote_dir, "readme"), "w") do |f| 
-      f.write("Content") 
-    end
     `echo ' changed' >> #{File.join(@ws_dir, "readme")}`
     RIM::git_session(@ws_dir) do |s|
       s.execute("git commit . -m 'Changed ws file'")
@@ -73,6 +70,26 @@ class SyncHelperTest < Minitest::Test
       assert File.exist?(File.join(@ws_dir, "mod1"))
       `cat #{File.join(@ws_dir, "mod1/readme.txt")}`.start_with?("Content. changed")
       assert File.exist?(File.join(@ws_dir, "mod2"))
+    end
+  end
+  
+  def test_files_are_synchronized_on_new_branch_if_behind_last_remote_commit
+    mod1_info = create_module_git("mod1")
+    mod2_info = create_module_git("mod2")
+    create_ws_git("testbr")
+    cut = RIM::SyncHelper.new(@ws_dir, [mod1_info, mod2_info])
+    cut.sync
+    `echo ' changed' >> #{File.join(@ws_remote_dir, "readme")}`
+    RIM::git_session(@ws_remote_dir) do |s|
+      s.execute("git commit . -m 'Changed ws file'")
+    end
+    RIM::git_session(@ws_dir) do |s|
+      s.execute("git pull")
+      assert !has_ancestor?(s, "rim/testbr", "testbr")
+    end
+    cut.sync
+    RIM::git_session(@ws_dir) do |s|
+      assert has_ancestor?(s, "rim/testbr", "testbr")
     end
   end
   
@@ -107,6 +124,10 @@ private
       s.execute("git commit -m 'Initial commit'")
     end
     return RIM::ModuleInfo.new(git_dir, name, branch)
+  end
+  
+  def has_ancestor?(session, rev, ancestor)
+    rev = session.execute("git rev-list #{rev}").include?(session.rev_sha1(ancestor))
   end
   
 end
