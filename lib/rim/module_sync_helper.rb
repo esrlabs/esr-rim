@@ -67,6 +67,7 @@ private
       @rim_info.revision = sha1
       @rim_info.ignores = @module_info.ignores
       @rim_info.to_dir(local_path)
+      DirtyCheck.mark_clean(local_path)
     end
   end
 

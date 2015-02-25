@@ -4,6 +4,7 @@ $:.unshift File.join(File.dirname(__FILE__))
 require 'minitest/autorun'
 require 'rim/git'
 require 'rim/module_info'
+require 'rim/status_builder'
 require 'rim/sync_helper'
 require 'test_helper'
 require 'fileutils'
@@ -34,6 +35,7 @@ class SyncHelperTest < Minitest::Test
       assert !File.exist?(File.join(@ws_dir, "mod1"))
       assert !File.exist?(File.join(@ws_dir, "mod2"))
       s.execute("git checkout rim/testbr")
+      check_not_dirty(s)
       log = s.execute("git log | grep \" module \"").split("\n").sort
       assert log.size == 2
       assert log[0].include?("mod1")
@@ -61,6 +63,7 @@ class SyncHelperTest < Minitest::Test
     cut.sync
     RIM::git_session(@ws_dir) do |s|
       s.execute("git checkout rim/testbr")
+      check_not_dirty(s)
       log = s.execute("git log | grep \" module \"").split("\n").sort
       assert log.size == 3
       assert log[0].include?("mod1")
@@ -124,6 +127,13 @@ private
       s.execute("git commit -m 'Initial commit'")
     end
     return RIM::ModuleInfo.new(git_dir, name, branch)
+  end
+
+  def check_not_dirty(session)
+    status = RIM::StatusBuilder.new.rev_status(session, "HEAD")
+    status.modules.each do |m|
+      assert !m.dirty?
+    end    
   end
   
   def has_ancestor?(session, rev, ancestor)

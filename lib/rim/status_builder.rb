@@ -1,5 +1,6 @@
 require 'rim/rim_info'
 require 'rim/rev_status'
+require 'rim/dirty_check'
 
 module RIM
 
