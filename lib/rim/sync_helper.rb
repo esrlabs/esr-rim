@@ -46,7 +46,7 @@ private
 
   # checkout the rim branch
   def checkout_rim_branch(session, rim_branch, rev)
-      if !session.has_branch?(rim_branch) || !has_ancestor?(s, rim_branch, rev)
+      if !session.has_branch?(rim_branch) || !has_ancestor?(session, rim_branch, rev)
         # the destination branch is not existing or is not ancestor of the last remote revision
         # => create the branch at the remote revision 
         session.execute("git checkout -B #{rim_branch} #{rev}")

@@ -16,6 +16,7 @@ class SyncHelperTest < Minitest::Test
   def setup
     test_dir = empty_test_dir("sync_helper_test")
     @remote_git_dir = File.join(test_dir, "remote_git")
+    @ws_remote_dir = File.join(test_dir, "remote_ws")
     @ws_dir = File.join(test_dir, "ws")
   end
   
@@ -41,16 +42,20 @@ class SyncHelperTest < Minitest::Test
   
 private
   def create_ws_git(branch = "master")
-    FileUtils.mkdir_p(@ws_dir)
-    RIM::git_session(@ws_dir) do |s|
+    FileUtils.mkdir_p(@ws_remote_dir)
+    RIM::git_session(@ws_remote_dir) do |s|
       s.execute("git init")
       s.execute("git checkout -B #{branch}")
-      File.open(File.join(@ws_dir, ".gitignore"), "w") do |f| 
+      File.open(File.join(@ws_remote_dir, ".gitignore"), "w") do |f| 
         f.write(".rim") 
       end
       s.execute("git add .")
       s.execute("git commit -m 'Initial commit'")
     end
+    `git clone #{@ws_remote_dir} #{@ws_dir}`
+    #RIM::git_session(:work_dir => ".", :git_dir => File.join(@ws_dir, ".git")) do |s|
+    #  s.execute("git clone #{@ws_remote_dir} #{@ws_dir}")
+    #end
   end
 
   def create_module_git(name, branch = "master")
