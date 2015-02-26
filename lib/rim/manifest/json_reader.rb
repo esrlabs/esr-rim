@@ -14,29 +14,29 @@ class ManifestFileNotFound       < RimError; status_code(10) ; end
 module RIM
 module Manifest
 
-
   def read_manifest
     f = Helpers::default_manifest
     raise "no manifest found" unless f
-    m = File.read(f)
-    data_hash = JSON.parse(m)
-    manifest = Manifest.new
-    remote = Remote.new(:fetch_url => data_hash["fetch_url"])
-    manifest.add_remote(remote)
-    modules = data_hash["dependencies"]
-    modules.each do |m|
-      manifest.add_module(
-        Module.new(
-          :remote_path => m["remote_path"],
-          :local_path => m["destination"],
-          :revision => m["version"],
-          :remote => remote
-        ))
-    end
-    manifest
+    parse_manifest(File.read(f))
   end
-end
+    
+  def parse_manifest(json)
+    data_hash = JSON.parse(json)
+    modules = []
+    if data_hash.has_key?("modules")
+      data_hash["modules"].each do |mod|
+        modules.push(
+          Module.new(
+            :remote_path => mod["remote_path"],
+            :local_path => mod["local_path"],
+            :target_revision => mod["target_revision"],
+            :ignores => mod["ignores"]
+          ))
+      end
+    end
+    Manifest.new(data_hash["remote_url"], modules)
+  end
+
 end
 
-# actual = CSV.read('manifest.lock')
-# puts actual.inspect
+end

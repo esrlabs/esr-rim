@@ -23,12 +23,19 @@ class SyncHelper < Processor
     # get the name of the current workspace branch
     RIM::git_session(:work_dir => @ws_root) do |s|
       branch = s.current_branch
-      remote_rev = get_last_remote_revision(s, branch)
-      rev = remote_rev ? remote_rev : branch
-      rim_branch = "rim/" + branch
-      checkout_rim_branch(s, rim_branch, rev)
-      sync_modules
-      s.execute("git checkout #{branch}")
+      if !branch.start_with?("rim/")
+        begin
+          remote_rev = get_last_remote_revision(s, branch)
+          rev = remote_rev ? remote_rev : branch
+          rim_branch = "rim/" + branch
+          checkout_rim_branch(s, rim_branch, rev)
+          sync_modules
+        ensure
+          s.execute("git checkout #{branch}")
+        end
+      else
+        puts "The current git branch '#{branch}' is a rim integration branch. Please switch to a non rim branch to proceed."
+      end
     end
   end
   

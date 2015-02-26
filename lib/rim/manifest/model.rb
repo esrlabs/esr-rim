@@ -2,61 +2,32 @@ module RIM
 module Manifest
 
 class Manifest
+
+  attr_reader :remote_url
+  attr_reader :modules
   
-  def initialize
-    @modules = []
-    @remotes = []
-  end
-  
-  def modules
-    @modules.dup
+  def initialize(remote_url, modules)
+    @remote_url = remote_url
+    @modules = modules
   end
 
-  def remotes
-    @remotes.dup
-  end
-
-  def add_module(m)
-    @modules << m
-  end
-
-  def add_remote(r)
-    @remotes << r
-  end
-
-end
-
-class Remote
-  attr_reader :fetch_url
-  attr_reader :review_url
-
-  def initialize(args={})
-    @fetch_url = args[:fetch_url]
-    @review_url = args[:review_url]
-  end
 end
 
 class Module
-  attr_reader :local_path
   attr_reader :remote_path
-  attr_reader :revision
-  attr_reader :remote
+  attr_reader :local_path
+  attr_reader :target_revision
+  attr_reader :ignores
 
-  def initialize(args={})
-    @local_path = args[:local_path]
+  def initialize(args = {})
     @remote_path = args[:remote_path]
-    @revision = args[:revision]
-    @remote = args[:remote]
+    @local_path = args[:local_path]
+    @target_revision = args[:target_revision]
+    @ignores = args[:ignores]
   end
-
-  def remote_url
-    url = remote.fetch_url
-    url << "/" unless url[-1] == "/"
-    url + remote_path
-  end
-
 end
 
 end
+
 end
 

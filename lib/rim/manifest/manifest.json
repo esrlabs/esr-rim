@@ -1,7 +1,7 @@
 {
-    "fetch_url" :   "ssh://gerrit",
-    "dependencies" : [
-        { "unit":"nvStorage", "version": "1.1", "destination": "./bsw/nvStorage","remote_path":"bsw/modules/nvStorage"},
-        {"unit":"eepromManager", "version": "1.0", "destination": "./bsw/eeprom","remote_path":"bsw/modules/eepromManager"}
+    "remote_url" : "ssh://gerrit",
+    "modules" : [
+        {"local_path": "./bsw/nvStorage", "remote_path": "bsw/modules/nvStorage", "target_revision": "1.1"},
+        {"local_path": "./bsw/eepromManager", "remote_path":"bsw/modules/eepromManager", "target_revision": "1.0"}
     ]
 }

@@ -1,6 +1,7 @@
 require 'rim/processor'
 require 'rim/rim_info'
 require 'rim/file_helper'
+require 'rim/dirty_check'
 
 module RIM
 
