@@ -3,6 +3,7 @@ $:.unshift File.join(File.dirname(__FILE__))
 
 require 'minitest/autorun'
 require 'rim/git'
+require 'rim/dirty_check'
 require 'rim/module_info'
 require 'rim/module_sync_helper'
 require 'test_helper'
@@ -21,9 +22,7 @@ class ModuleSyncHelperTest < Minitest::Test
     RIM::git_session(@remote_git_dir) do |s|
       s.execute("git init")
       s.execute("git checkout -B testbr")
-      File.open(File.join(@remote_git_dir, "readme.txt"), "w") do |f| 
-        f.write("Content.") 
-      end
+      write_file(@remote_git_dir, "readme.txt")
       s.execute("git add .")
       s.execute("git commit -m 'Initial commit'")
     end
@@ -39,6 +38,32 @@ class ModuleSyncHelperTest < Minitest::Test
     cut.sync
     assert File.exists?(File.join(@ws_dir, "test/readme.txt"))
     assert File.exists?(File.join(@ws_dir, "test/.riminfo"))
+  end
+
+  def test_files_of_ignore_list_are_not_removed_when_copying
+    test_folder = File.join(@ws_dir, "test")
+    write_file(test_folder, "file1")
+    write_file(test_folder, "file2")
+    write_file(File.join(test_folder, "folder"), "file1")
+    write_file(File.join(test_folder, "folder"), "file2")
+    write_file(File.join(test_folder, "folder2"), "file1")
+    info = RIM::ModuleInfo.new(@remote_git_dir, "test", "testbr", "**/file2")
+    cut = RIM::ModuleSyncHelper.new(@ws_dir, info)
+    cut.sync
+    assert File.exists?(File.join(test_folder, "readme.txt"))
+    assert File.exists?(File.join(test_folder, ".riminfo"))
+    assert !File.exists?(File.join(test_folder, "file1"))
+    assert File.exists?(File.join(test_folder, "file2"))
+    assert !File.exists?(File.join(test_folder, "folder/file1"))
+    assert File.exists?(File.join(test_folder, "folder/file2"))
+    assert File.exists?(File.join(test_folder, "folder/file2"))
+  end
+
+  def write_file(dir, name)
+    FileUtils.mkdir_p(dir)
+    File.open(File.join(dir, name), "w") do |f| 
+      f.write("Content of #{name}\n") 
+    end
   end
   
 end

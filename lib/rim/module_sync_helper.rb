@@ -1,5 +1,6 @@
 require 'rim/processor'
 require 'rim/rim_info'
+require 'rim/file_helper'
 
 module RIM
 
@@ -57,18 +58,28 @@ private
     git_path = module_git_path(@remote_path)
     RIM::git_session(:git_dir => git_path, :work_dir => "") do |s|
       local_path = File.join(@ws_root, @module_info.local_path)
-      FileUtils.rm_rf local_path if File.exist? local_path
-      FileUtils.mkdir_p local_path
+      prepare_local_folder(local_path, @module_info.ignores)
       s.execute("git archive --format tar #{@module_info.target_revision} | tar -x -C #{local_path}")
       sha1 = s.execute("git rev-parse #{@module_info.target_revision}").strip
       @rim_info = RimInfo.new
       @rim_info.remote_url = @module_info.remote_url
       @rim_info.upstream = @module_info.target_revision
       @rim_info.revision = sha1
-      @rim_info.ignores = @module_info.ignores
+      @rim_info.ignores = @module_info.ignores.join(",")
       @rim_info.to_dir(local_path)
       DirtyCheck.mark_clean(local_path)
     end
+  end
+
+  def prepare_local_folder(local_path, ignores)
+    ignores = FileHelper.find_matching_files(local_path, true, ignores)
+    FileHelper.find_matching_files(local_path, true, "/**/*", File::FNM_DOTMATCH).each do |f|
+      if File.file?(f) && !ignores.include?(f)
+        FileUtils.rm(f)
+      end
+    end
+    FileHelper.remove_empty_dirs(local_path)
+    FileUtils.mkdir_p(local_path)
   end
 
 end

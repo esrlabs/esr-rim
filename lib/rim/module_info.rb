@@ -10,11 +10,17 @@ class ModuleInfo
   # ignores
   attr_reader :ignores
   
-  def initialize(remote_url, local_path, target_revision, ignores = [])
+  def initialize(remote_url, local_path, target_revision, ignores = nil)
     @remote_url = remote_url
     @local_path = local_path
     @target_revision = target_revision
-    @ignores = ignores
+    if ignores.is_a?(String)
+      @ignores = ignores.split(",").each do |s| 
+        s.strip! 
+      end 
+    else
+      @ignores = ignores || []
+    end
   end
 end
 

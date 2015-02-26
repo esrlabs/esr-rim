@@ -1,6 +1,7 @@
 require 'digest'
 require 'pathname'
 require 'rim/rim_info'
+require 'rim/file_helper'
 
 module RIM
 
@@ -54,17 +55,14 @@ class DirtyCheck
     if check_required_attributes(mi)
       sha1 = Digest::SHA1.new
       # all files and directories within dir
-      files = Dir.glob(dir+"/**/*", File::FNM_DOTMATCH).collect { |fn|
-        # make sure we exclude local path prefixes from path names
-        Pathname.new(fn).relative_path_from(Pathname.new(dir)).to_s
-      }
+      files = FileHelper.find_matching_files(dir, false, "/**/*", File::FNM_DOTMATCH)
       # Dir.glob with FNM_DOTMATCH might return . and ..
       files.delete(".")
       files.delete("..")
       # ignore the info file itself
       files.delete(RimInfo::InfoFileName)
       # ignores defined by user
-      files -= ignored_files(mi, dir)
+      files -= FileHelper.find_matching_files(dir, false, mi.ignores)
       # order of files makes a difference
       # sort to eliminate platform specific glob behavior
       files.sort!
@@ -84,16 +82,7 @@ class DirtyCheck
   private 
 
   def ignored_files(mi, dir)
-    ignores = []
-    if mi.ignores
-      dir_pn = Pathname.new(dir)
-      mi.ignores.split(",").each do |i|
-        Dir.glob(dir+"/"+i).each do |fn|
-          ignores << Pathname.new(fn).relative_path_from(dir_pn).to_s
-        end
-      end
-    end
-    ignores
+    find_matching_files(dir, mi.ignores)
   end
 
   def update_file(sha1, dir, filename)
