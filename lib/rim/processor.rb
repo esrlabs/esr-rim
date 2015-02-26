@@ -9,8 +9,9 @@ class Processor
 
 MaxThreads = 10
 
-def initialize(workspace_root)
+def initialize(workspace_root, logger)
   @ws_root = workspace_root
+  @logger = logger
 end
 
 def module_git_path(remote_path)
@@ -71,7 +72,8 @@ def local_changes?(ws_dir, dir=ws_dir)
 end
 
 def each_module_parallel(task_desc, modules)
-  print "starting \"#{task_desc}\" for #{modules.size} modules\r"
+  
+  @logger.debug "starting \"#{task_desc}\" for #{modules.size} modules\r"
   threads = []
   i = 0
   done = 0
@@ -89,7 +91,7 @@ def each_module_parallel(task_desc, modules)
       else
         t.join
         done += 1
-        print "#{task_desc} #{done}/#{modules.size}\r"
+        @logger.debug "#{task_desc} #{done}/#{modules.size}\r"
         false
       end
     }

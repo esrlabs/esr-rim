@@ -6,7 +6,7 @@ module RIM
 class SyncHelper < Processor
 
   def initialize(workspace_root, module_infos, logger)
-    super(workspace_root)
+    super(workspace_root, logger)
     @module_helpers = []
     module_infos.each do |info|
       @module_helpers.push(ModuleSyncHelper.new(workspace_root, info, logger))
