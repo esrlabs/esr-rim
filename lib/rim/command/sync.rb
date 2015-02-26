@@ -30,11 +30,11 @@ class Sync < Command
       module_infos.push(ModuleInfo.new(remote_path, mod.local_path, mod.target_revision, mod.ignores))
     end
     
-    helper = SyncHelper.new(".", module_infos)
+    helper = SyncHelper.new(".", module_infos, @logger)
     if helper.ready?
       helper.sync                
     else
-      puts "workspace not ready!"
+      @logger.error "The workspace git contains uncommitted changes."
     end
   end
 

@@ -26,6 +26,7 @@ class ModuleSyncHelperTest < Minitest::Test
       s.execute("git add .")
       s.execute("git commit -m 'Initial commit'")
     end
+    @logger = Logger.new($stdout)
   end
   
   def teardown
@@ -34,7 +35,7 @@ class ModuleSyncHelperTest < Minitest::Test
 
   def test_files_are_copied_to_working_dir
     info = RIM::ModuleInfo.new(@remote_git_dir, "test", "testbr")
-    cut = RIM::ModuleSyncHelper.new(@ws_dir, info)
+    cut = RIM::ModuleSyncHelper.new(@ws_dir, info, @logger)
     cut.sync
     assert File.exists?(File.join(@ws_dir, "test/readme.txt"))
     assert File.exists?(File.join(@ws_dir, "test/.riminfo"))
@@ -48,7 +49,7 @@ class ModuleSyncHelperTest < Minitest::Test
     write_file(File.join(test_folder, "folder"), "file2")
     write_file(File.join(test_folder, "folder2"), "file1")
     info = RIM::ModuleInfo.new(@remote_git_dir, "test", "testbr", "**/file2")
-    cut = RIM::ModuleSyncHelper.new(@ws_dir, info)
+    cut = RIM::ModuleSyncHelper.new(@ws_dir, info, @logger)
     cut.sync
     assert File.exists?(File.join(test_folder, "readme.txt"))
     assert File.exists?(File.join(test_folder, ".riminfo"))

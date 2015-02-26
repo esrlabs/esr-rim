@@ -7,10 +7,11 @@ module RIM
 
 class ModuleSyncHelper < Processor
 
-  def initialize(workspace_root, module_info)
+  def initialize(workspace_root, module_info, logger)
     super(workspace_root)
     @module_info = module_info
     @remote_path = remote_path(@module_info.remote_url)
+    @logger = logger
   end
 
   # check whether module is ready for update

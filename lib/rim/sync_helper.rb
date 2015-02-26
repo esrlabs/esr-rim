@@ -5,12 +5,13 @@ module RIM
 
 class SyncHelper < Processor
 
-  def initialize(workspace_root, module_infos)
+  def initialize(workspace_root, module_infos, logger)
     super(workspace_root)
     @module_helpers = []
     module_infos.each do |info|
-      @module_helpers.push(ModuleSyncHelper.new(workspace_root, info))
+      @module_helpers.push(ModuleSyncHelper.new(workspace_root, info, logger))
     end
+    @logger = logger
   end
 
   # check whether workspace is ready for sync
@@ -34,7 +35,7 @@ class SyncHelper < Processor
           s.execute("git checkout #{branch}")
         end
       else
-        puts "The current git branch '#{branch}' is a rim integration branch. Please switch to a non rim branch to proceed."
+        @logger.error "The current git branch '#{branch}' is a rim integration branch. Please switch to a non rim branch to proceed."
       end
     end
   end

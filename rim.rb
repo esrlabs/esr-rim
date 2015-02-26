@@ -8,9 +8,9 @@ require 'rim/git'
 include Subcommands
 
 logger = Logger.new($stdout)
-logger.level = Logger::WARN
-logger.formatter = proc do |serverity, time, progname, msg|
-  "#{serverity}: #{msg}\n"
+logger.level = Logger::INFO
+logger.formatter = proc do |severity, time, progname, msg|
+  "#{severity}: #{msg}\n"
 end
 
 RIM::GitSession.logger = logger
@@ -25,12 +25,6 @@ ObjectSpace.each_object(Class).select{|clazz| clazz < RIM::Command::Command }.ea
   end
 end
 cmdname = opt_parse()
-commands[cmdname].invoke()
-
-#manifest = RIM::Manifest::read_manifest()
-#raise "not in a git repository!" unless Dir.exist?(".git")
-#raise "no manifest.rim found!" if manifest.nil?
-#raise "git repo has changes!" unless processor.local_changes?(".")
-
-#RIM::Command::Update.new(processor).invoke(manifest)
-#RIM::Command::Deploy.new(processor).invoke(manifest)
+cmd = commands[cmdname]
+cmd.logger = logger
+cmd.invoke()
