@@ -1,6 +1,5 @@
 require 'json'
 require 'csv'
-require 'rim/manifest/helper'
 require 'rim/manifest/model'
 
 class RimError < StandardError
@@ -14,8 +13,7 @@ class ManifestFileNotFound       < RimError; status_code(10) ; end
 module RIM
 module Manifest
 
-  def read_manifest
-    f = Helpers::default_manifest
+  def read_manifest(f)
     raise "no manifest found" unless f
     parse_manifest(File.read(f))
   end
