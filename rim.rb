@@ -11,7 +11,11 @@ include Subcommands
 logger = Logger.new($stdout)
 logger.level = Logger::INFO
 logger.formatter = proc do |severity, time, progname, msg|
-  "#{severity}: #{msg}\n"
+  if severity == "INFO"
+    "#{msg}\n"
+  else
+    "#{severity}: #{msg}\n"
+  end
 end
 
 RIM::GitSession.logger = logger
