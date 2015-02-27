@@ -1,16 +1,13 @@
-require 'rim/processor'
+require 'rim/command_helper'
 require 'rim/module_sync_helper'
 
 module RIM
 
-class SyncHelper < Processor
+class SyncHelper < CommandHelper
 
-  def initialize(workspace_root, module_infos, logger)
+  def initialize(workspace_root, logger)
     super(workspace_root, logger)
     @module_helpers = []
-    module_infos.each do |info|
-      @module_helpers.push(ModuleSyncHelper.new(workspace_root, info, logger))
-    end
     @logger = logger
   end
 
@@ -39,9 +36,14 @@ class SyncHelper < Processor
       end
     end
   end
+
+protected
+  # called to add a module info
+  def add_module_info(module_info)
+    @module_helpers.push(ModuleSyncHelper.new(@ws_root, module_info, @logger))
+  end
   
 private
-
   # sync all modules
   def sync_modules
     each_module_parallel("sync'ing", @module_helpers) do |m|

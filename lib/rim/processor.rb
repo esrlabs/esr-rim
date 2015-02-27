@@ -72,29 +72,30 @@ def local_changes?(ws_dir, dir=ws_dir)
 end
 
 def each_module_parallel(task_desc, modules)
-  
-  @logger.debug "starting \"#{task_desc}\" for #{modules.size} modules\r"
-  threads = []
-  i = 0
-  done = 0
-  while i == 0 || !threads.empty?
-    while threads.size < MaxThreads && i < modules.size
-      threads << Thread.new(i) do |i|
-        yield(modules[i], i)
+  if !modules.empty?
+    @logger.debug "starting \"#{task_desc}\" for #{modules.size} modules\r"
+    threads = []
+    i = 0
+    done = 0
+    while i == 0 || !threads.empty?
+      while threads.size < MaxThreads && i < modules.size
+        threads << Thread.new(i) do |i|
+          yield(modules[i], i)
+        end
+        i += 1
       end
-      i += 1
+      sleep(0.1)
+      threads = threads.select{|t|
+        if t.alive?
+          true
+        else
+          t.join
+          done += 1
+          @logger.debug "#{task_desc} #{done}/#{modules.size}\r"
+          false
+        end
+      }
     end
-    sleep(0.1)
-    threads = threads.select{|t|
-      if t.alive?
-        true
-      else
-        t.join
-        done += 1
-        @logger.debug "#{task_desc} #{done}/#{modules.size}\r"
-        false
-      end
-    }
   end
 end
 
