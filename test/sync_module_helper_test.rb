@@ -5,13 +5,13 @@ require 'minitest/autorun'
 require 'rim/git'
 require 'rim/dirty_check'
 require 'rim/module_info'
-require 'rim/module_sync_helper'
+require 'rim/sync_module_helper'
 require 'test_helper'
 require 'fileutils'
 
 include FileUtils
 
-class ModuleSyncHelperTest < Minitest::Test
+class SyncModuleHelperTest < Minitest::Test
   include TestHelper
 
   def setup
@@ -35,7 +35,7 @@ class ModuleSyncHelperTest < Minitest::Test
 
   def test_files_are_copied_to_working_dir
     info = RIM::ModuleInfo.new(@remote_git_dir, "test", "testbr")
-    cut = RIM::ModuleSyncHelper.new(@ws_dir, info, @logger)
+    cut = RIM::SyncModuleHelper.new(@ws_dir, info, @logger)
     cut.sync
     assert File.exists?(File.join(@ws_dir, "test/readme.txt"))
     assert File.exists?(File.join(@ws_dir, "test/.riminfo"))
@@ -49,7 +49,7 @@ class ModuleSyncHelperTest < Minitest::Test
     write_file(File.join(test_folder, "folder"), "file2")
     write_file(File.join(test_folder, "folder2"), "file1")
     info = RIM::ModuleInfo.new(@remote_git_dir, "test", "testbr", "**/file2")
-    cut = RIM::ModuleSyncHelper.new(@ws_dir, info, @logger)
+    cut = RIM::SyncModuleHelper.new(@ws_dir, info, @logger)
     cut.sync
     assert File.exists?(File.join(test_folder, "readme.txt"))
     assert File.exists?(File.join(test_folder, ".riminfo"))

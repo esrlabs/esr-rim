@@ -5,7 +5,7 @@ require 'rim/dirty_check'
 
 module RIM
 
-class ModuleSyncHelper < Processor
+class SyncModuleHelper < Processor
 
   def initialize(workspace_root, module_info, logger)
     super(workspace_root, logger)

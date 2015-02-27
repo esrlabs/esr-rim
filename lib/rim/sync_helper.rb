@@ -1,5 +1,5 @@
 require 'rim/command_helper'
-require 'rim/module_sync_helper'
+require 'rim/sync_module_helper'
 
 module RIM
 
@@ -40,7 +40,7 @@ class SyncHelper < CommandHelper
 protected
   # called to add a module info
   def add_module_info(module_info)
-    @module_helpers.push(ModuleSyncHelper.new(@ws_root, module_info, @logger))
+    @module_helpers.push(SyncModuleHelper.new(@ws_root, module_info, @logger))
   end
   
 private
