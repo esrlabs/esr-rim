@@ -3,6 +3,7 @@ require 'subcommand'
 require 'logger'
 require 'rim/command/sync'
 require 'rim/command/upload'
+require 'rim/command/status'
 require 'rim/git'
 
 include Subcommands

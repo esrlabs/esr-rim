@@ -6,9 +6,11 @@ module Command
 class Status < Command
 
   def initialize(opts)
-    # opts.banner = "Usage: rim status"
-    # opts.description = "Print local commits and their status"
-    @detailed = false
+    opts.banner = "Usage: rim status"
+    opts.description = "Print local commits and their status"
+    opts.on("-d", "--detailed", "print detailed status") do
+      @detailed = true
+    end
   end
 
   def invoke()
