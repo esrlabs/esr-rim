@@ -69,9 +69,10 @@ class UploadModuleHelperTest < Minitest::Test
     info = RIM::ModuleInfo.new(@remote_git_dir, "module", "testbr")
     cut = RIM::UploadModuleHelper.new(@ws_dir, info, @logger)
     cut.upload(nil, revs)
-    RIM::git_session(@ws_dir) do |s|
-      assert File.exists?(File.join(@ws_dir, "module/readme.txt"))
-      assert File.exists?(File.join(@ws_dir, "module/second.txt"))
+    RIM::git_session(@remote_git_dir) do |s|
+      s.execute("git checkout rim/#{revs[0]}")
+      assert File.exists?(File.join(@remote_git_dir, "readme.txt"))
+      assert File.exists?(File.join(@remote_git_dir, "second.txt"))
     end
   end
 

@@ -69,7 +69,7 @@ private
         end
       end
       # Finally we're done. Push the changes
-      dest.execute("git push --all")                              
+      dest.execute("git push --all #{@remote_path}")                              
     end
   end
   
