@@ -13,44 +13,17 @@ class UploadModuleHelper < ModuleHelper
 
   # do the module uploads for revisions given by sha
   def upload(parent, sha1s)
-    fetch_module
     upload_module_changes(parent, sha1s)      
-  end
-  
-  def commit
-    RIM::git_session(@ws_root) do |s|
-      # do we need to commit something?
-      stat = s.status(@module_info.local_path)
-      if stat.lines.any?
-        msg = "module #{@remote_path}: #{@rim_info.revision}"
-        # add before commit because the path can be below a not yet added path
-        s.execute("git add #{@module_info.local_path}")
-        s.execute("git commit #{@module_info.local_path} -m \"#{msg}\"")
-      end
-    end
   end
   
 private
 
-  # fetch module +mod+ into the .rim folder
-  # works both for initial fetch and updates
-  def fetch_module
-    git_path = module_git_path(@remote_path)
-    FileUtils.mkdir_p git_path
-    RIM::git_session(git_path) do |s|
-      if !File.exist?(File.join(git_path, ".git"))
-        s.execute("git clone #{@module_info.remote_url} .")
-      else
-        s.execute("git fetch")
-      end
-    end
-  end
-
   # upload the content of the module
   def upload_module_changes(parent_sha1, sha1s)
+    remote_path = module_git_path(@remote_path)
+    clone_or_fetch_repository(@remote_path, remote_path)
     # search for the first revision that is not 
-    git_path = module_git_path(@remote_path)
-    tmp_git_path = create_tmp_git
+    tmp_git_path = clone_or_fetch_repository(remote_path, module_tmp_git_path(@remote_path))
     RIM::git_session(tmp_git_path) do |dest|
       RIM::git_session(@ws_root) do |src|
         branch = nil
@@ -73,19 +46,19 @@ private
     end
   end
   
-  # create temporary git which allows us to copy the working space into
-  def create_tmp_git
-    tmp_git_path = module_tmp_git_path(@remote_path)
-    FileUtils.mkdir_p(tmp_git_path)
-    RIM::git_session(tmp_git_path) do |s|
-      if !File.exist?(File.join(tmp_git_path, ".git"))
-        s.execute("git clone #{@module_info.remote_url} .")
+  # clone or fetch repository
+  def clone_or_fetch_repository(remote_url, local_path)
+    FileUtils.mkdir_p local_path
+    RIM::git_session(local_path) do |s|
+      if !File.exist?(File.join(local_path, ".git"))
+        s.execute("git clone #{remote_url} .")
       else
         s.execute("git fetch")
       end
     end
-    tmp_git_path
+    local_path
   end
+
 
   # commit changes to session
   def commit_changes(session, branch, sha1, msg)

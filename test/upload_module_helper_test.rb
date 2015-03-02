@@ -71,9 +71,9 @@ class UploadModuleHelperTest < Minitest::Test
     cut.upload(nil, revs)
     RIM::git_session(@remote_git_dir) do |s|
       s.execute("git checkout rim/#{revs[0]}")
-      assert File.exists?(File.join(@remote_git_dir, "readme.txt"))
-      assert File.exists?(File.join(@remote_git_dir, "second.txt"))
     end
+    assert File.exists?(File.join(@remote_git_dir, "readme.txt"))
+    assert File.exists?(File.join(@remote_git_dir, "second.txt"))
   end
 
   def write_file(dir, name)
