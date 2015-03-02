@@ -5,13 +5,15 @@ module RIM
 
 class GitSession
 
-  def initialize(logger, arg = {})
-    if arg.is_a?(String)
-      @work_dir = arg
-      @git_dir = arg+"/.git"
-    elsif arg.is_a?(Hash)
-      @work_dir = arg.has_key?(:work_dir) ? arg[:work_dir] : "."
-      @git_dir = arg.has_key?(:git_dir) ? arg[:git_dir] : @work_dir+"/.git"
+  attr_reader :execute_dir
+  attr_reader :work_tree
+  attr_reader :git_dir
+
+  def initialize(logger, execute_dir, arg = {})
+    @execute_dir = execute_dir
+    if arg.is_a?(Hash)
+      @work_dir = arg.has_key?(:work_dir) ? arg[:work_dir] : ""
+      @git_dir = arg.has_key?(:git_dir) ? arg[:git_dir] : ""
     end
     @logger = logger
   end
@@ -20,9 +22,9 @@ class GitSession
     @logger = logger
   end
 
-  def self.open(options = {})
+  def self.open(execute_dir, options = {})
     log = @logger || Logger.new($stdout)
-    self.new(log, options)
+    self.new(log, execute_dir, options)
   end
 
   def self.next_invocation_id
@@ -91,13 +93,13 @@ class GitSession
   # returns the parent commits of rev as SHA-1s 
   # returns an empty array if there are no parents (e.g. orphan or initial)
   def parent_revs(rev)
-    out = execute "git rev-list -n 1 --parents #{rev}"
+    out = execute "git rev-list -n 1 --parents #{rev} --"
     out.strip.split[1..-1]
   end
 
   # returns the SHA-1 representation of rev
   def rev_sha1(rev)
-    out = execute "git rev-list -n 1 #{rev}"
+    out = execute "git rev-list -n 1 #{rev} --"
     out.strip
   end
 
@@ -115,7 +117,7 @@ class GitSession
 
   # all commits reachable from rev which are not ancestors of remote branches
   def all_reachable_non_remote_revs(rev)
-    out = execute "git rev-list #{rev} --not --remotes"
+    out = execute "git rev-list #{rev} --not --remotes --"
     out.split("\n")
   end
 
@@ -156,7 +158,7 @@ class GitSession
   def execute(cmd)
     raise "git command has to start with 'git'" unless cmd.start_with? "git "
     cmd.slice!("git ")
-    options = (@work_dir.empty? ? "" : " --work-tree=#{File.expand_path(@work_dir)}") + (@git_dir.empty? ? "" : " --git-dir=#{File.expand_path(@git_dir)}") 
+    options = (@execute_dir.empty? ? "" : " -C #{@execute_dir}") + (@work_dir.empty? ? "" : " --work-tree=#{File.expand_path(@work_dir)}") + (@git_dir.empty? ? "" : " --git-dir=#{File.expand_path(@git_dir)}") 
     cmd = "git#{options} #{cmd} 2>&1"
 
     out = `#{cmd}`
@@ -223,8 +225,8 @@ class GitSession
 
 end
 
-def RIM.git_session(options = {})
-  s = GitSession.open(options)
+def RIM.git_session(execute_dir, options = {})
+  s = GitSession.open(execute_dir, options)
   yield s
 end
 

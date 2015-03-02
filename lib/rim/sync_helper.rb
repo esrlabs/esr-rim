@@ -11,15 +11,15 @@ class SyncHelper < CommandHelper
     @logger = logger
   end
 
-  # check whether workspace is ready for sync
-  def ready?
-    local_changes?(@ws_root)
+  # called to add a module info
+  def add_module_info(module_info)
+    @module_helpers.push(SyncModuleHelper.new(@ws_root, module_info, @logger))
   end
 
   # sync all module changes into rim branch
   def sync
     # get the name of the current workspace branch
-    RIM::git_session(:work_dir => @ws_root) do |s|
+    RIM::git_session(@ws_root) do |s|
       branch = s.current_branch
       if !branch.start_with?("rim/")
         begin
@@ -37,12 +37,6 @@ class SyncHelper < CommandHelper
     end
   end
 
-protected
-  # called to add a module info
-  def add_module_info(module_info)
-    @module_helpers.push(SyncModuleHelper.new(@ws_root, module_info, @logger))
-  end
-  
 private
   # sync all modules
   def sync_modules

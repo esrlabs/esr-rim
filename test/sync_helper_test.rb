@@ -30,7 +30,9 @@ class SyncHelperTest < Minitest::Test
     mod1_info = create_module_git("mod1")
     mod2_info = create_module_git("mod2")
     create_ws_git("testbr")
-    cut = RIM::SyncHelper.new(@ws_dir, [mod1_info, mod2_info], @logger)
+    cut = RIM::SyncHelper.new(@ws_dir, @logger)
+    cut.add_module_info(mod1_info)
+    cut.add_module_info(mod2_info)
     cut.sync
     RIM::git_session(@ws_dir) do |s|
       assert !File.exist?(File.join(@ws_dir, "mod1"))
@@ -51,7 +53,9 @@ class SyncHelperTest < Minitest::Test
     mod1_info = create_module_git("mod1")
     mod2_info = create_module_git("mod2")
     create_ws_git("testbr")
-    cut = RIM::SyncHelper.new(@ws_dir, [mod1_info, mod2_info], @logger)
+    cut = RIM::SyncHelper.new(@ws_dir, @logger)
+    cut.add_module_info(mod1_info)
+    cut.add_module_info(mod2_info)
     cut.sync
     `echo ' changed' >> #{File.join(@ws_dir, "readme")}`
     RIM::git_session(@ws_dir) do |s|
@@ -81,7 +85,9 @@ class SyncHelperTest < Minitest::Test
     mod1_info = create_module_git("mod1")
     mod2_info = create_module_git("mod2")
     create_ws_git("testbr")
-    cut = RIM::SyncHelper.new(@ws_dir, [mod1_info, mod2_info], @logger)
+    cut = RIM::SyncHelper.new(@ws_dir, @logger)
+    cut.add_module_info(mod1_info)
+    cut.add_module_info(mod2_info)
     cut.sync
     `echo ' changed' >> #{File.join(@ws_remote_dir, "readme")}`
     RIM::git_session(@ws_remote_dir) do |s|

@@ -1,6 +1,6 @@
 require 'rim/command/command'
 require 'rim/processor'
-require 'rim/manifest/json_reader'
+require 'rim/upload_helper'
 
 module RIM
 module Command
@@ -15,17 +15,17 @@ class Upload < Command
   end
 
   def invoke()
-    @processor = Processor.new(".")
-    manifest = read_manifest()
-    mods = manifest.modules
-    @processor.each_module_parallel("updating", mods) do |m, i|
-      puts "fetching #{m}..."
-      @processor.fetch_module(m)
-      tmp_git = @processor.create_tmp_git(m)
-      # TODO check that m.revision is really a branch
-      @processor.checkout_branch(tmp_git, m.revision)
-      @processor.commit_working_copy(tmp_git, m.local_path)
+    helper = UploadHelper.new(".", @logger)
+    if helper.modules_from_workspace
+      if helper.ready?
+        helper.upload                
+      else
+        @logger.error "The workspace git contains uncommitted changes."
+      end
+    else
+      @logger.error "The current directory is no rim project root."
     end
+
   end
 
 end

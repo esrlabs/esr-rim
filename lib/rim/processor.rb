@@ -17,13 +17,13 @@ end
 def module_git_path(remote_path)
   # remote url without protocol specifier
   # this way the local path should be unique
-  "#{@ws_root}/.rim/#{remote_path}"
+  File.join(@ws_root, ".rim", remote_path)
 end
 
 def module_tmp_git_path(remote_path)
   # remote url without protocol specifier
   # this way the local path should be unique
-  "#{@ws_root}/.tmp/#{remote_path}"
+  File.join(@ws_root, ".rim", ".tmp", remote_path)
 end
 
 def remote_path(remote_url)

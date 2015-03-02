@@ -15,6 +15,11 @@ class CommandHelper < Processor
     @logger = logger
   end
 
+  # check whether workspace is not touched
+  def ready?
+    local_changes?(@ws_root)
+  end
+
   def modules_from_manifest(path)
     manifest = read_manifest(path)
     remote_url = URI.parse(manifest.remote_url ? manifest.remote_url : "ssh://gerrit/")
@@ -40,7 +45,6 @@ class CommandHelper < Processor
     end
   end
 
-protected
   def add_module_info(module_info)
   end
 

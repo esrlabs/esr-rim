@@ -1,7 +1,6 @@
 require 'rim/command/command'
 require 'rim/manifest/helper'
 require 'rim/sync_helper'
-require 'rim/module_info'
 require 'uri'
 
 module RIM

@@ -43,34 +43,44 @@ class RimInfo
     mi
   end
 
+  def self.from_s(content)
+    mi = self.new
+    mi.from_s(content)
+    mi
+  end
+  
+  def from_s(content)
+    attrs = {}
+    checksum = content[0..39]
+    # exclude \n after checksum
+    content = content[41..-1]
+    if checksum == calc_sha1(content)
+      content.split("\n").each do |l|
+        col = l.index(":")
+        if col
+          name, value = l[0..col-1], l[col+1..-1]
+          if name && value
+            attrs[name.strip.to_sym] = value.strip
+          end
+        end
+      end
+    else
+      # checksum error, ignore content
+      # TODO: output user warning
+    end
+    AttrsDef.each do |a|
+      send("#{a}=".to_sym, attrs[a])
+    end
+  end
+
   def from_dir(dir)
     file = info_file(dir)
-    attrs = {}
     if File.exist?(file)
       content = nil
       File.open(file, "rb") do |f|
         content = f.read
       end
-      checksum = content[0..39]
-      # exclude \n after checksum
-      content = content[41..-1]
-      if checksum == calc_sha1(content)
-        content.split("\n").each do |l|
-          col = l.index(":")
-          if col
-            name, value = l[0..col-1], l[col+1..-1]
-            if name && value
-              attrs[name.strip.to_sym] = value.strip
-            end
-          end
-        end
-      else
-        # checksum error, ignore content
-        # TODO: output user warning
-      end
-    end
-    AttrsDef.each do |a|
-      send("#{a}=".to_sym, attrs[a])
+      from_s(content)
     end
   end
 
