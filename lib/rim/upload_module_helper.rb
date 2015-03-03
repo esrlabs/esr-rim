@@ -72,7 +72,9 @@ private
 
   # get target revision for this module for workspace revision
   def get_riminfo_for_revision(session, sha1)
-    rim_info = RimInfo.from_s(session.safe_execute("git show #{sha1}:#{File.join(@module_info.local_path, RimInfo::InfoFileName)}", ""))    
+    session.execute("git show #{sha1}:#{File.join(@module_info.local_path, RimInfo::InfoFileName)}") do |out, e|
+      return RimInfo.from_s(!e ? out : "")
+    end
   end 
   
   # create update branch for given revision

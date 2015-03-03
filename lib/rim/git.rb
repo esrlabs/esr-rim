@@ -96,7 +96,9 @@ class GitSession
   
   # check whether branch exists
   def has_branch?(branch)
-    !safe_execute("git show-ref refs/heads/#{branch}", "").empty?
+    execute("git show-ref refs/heads/#{branch}") do |b, e|
+      return !e
+    end
   end 
 
   # returns the parent commits of rev as SHA-1s 
@@ -164,14 +166,6 @@ class GitSession
     parse_status(out)
   end
 
-  def safe_execute(cmd, error_return = nil)
-    begin
-      return execute(cmd)
-    rescue GitException
-      return error_return
-    end
-  end
-
   def execute(cmd)
     raise "git command has to start with 'git'" unless cmd.start_with? "git "
     cmd.slice!("git ")
@@ -190,8 +184,12 @@ class GitSession
       @logger.debug "git##{invid} out : #{ol}"
     end
 
-    if exitstatus != 0
-      raise GitException.new(cmd, exitstatus, out)
+    exception = exitstatus != 0 ? GitException.new(cmd, exitstatus, out) : nil
+    
+    if block_given?
+      yield out, exception  
+    elsif exception
+      raise exception
     end
 
     out

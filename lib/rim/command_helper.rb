@@ -1,4 +1,5 @@
 require 'rim/processor'
+require 'rim/module_info'
 require 'rim/rim_info'
 require 'rim/manifest/json_reader'
 require 'rim/status_builder'
