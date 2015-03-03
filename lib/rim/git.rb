@@ -3,6 +3,16 @@ require 'logger'
 
 module RIM
 
+# raised when there is an error emitted by git call
+class GitException < Exception
+  attr_reader :cmd, :exitstatus, :out
+  def initialize(cmd, exitstatus, out)
+    @cmd = cmd
+    @exitstatus = exitstatus
+    @out = out
+  end
+end
+
 class GitSession
 
   attr_reader :execute_dir
@@ -86,8 +96,12 @@ class GitSession
   
   # check whether branch exists
   def has_branch?(branch)
-    out = execute "git show-ref refs/heads/#{branch}"
-    !out.empty?
+    begin
+      execute "git show-ref refs/heads/#{branch}"
+      return true
+    rescue GitException => e
+      return false
+    end
   end 
 
   # returns the parent commits of rev as SHA-1s 
@@ -162,35 +176,20 @@ class GitSession
     cmd = "git#{options} #{cmd} 2>&1"
 
     out = `#{cmd}`
-    @exitstatus = $?.exitstatus
+    exitstatus = $?.exitstatus
 
     invid = self.class.next_invocation_id.to_s.ljust(4)
-    @logger.debug "git##{invid} \"#{cmd}\""
-    @logger.warn "git##{invid} exit: #{@exitstatus}" if failed?
+    @logger.debug "git##{invid} \"#{cmd}\"" 
 
     out.split(/\r?\n/).each do |ol|
       @logger.debug "git##{invid} out : #{ol}"
     end
 
-    if failed?
-      @logger.error "git##{invid} \"#{cmd}\""
-      output = "git##{invid} exit: #{@exitstatus}\n#{out}"
-      # out.split(/\r?\n/).each do |ol|
-      #   @logger.error "git##{invid} out : #{ol}"
-      # end
-      @logger.error output
-      raise "git command failed: #{cmd}" if @bail_on_error
+    if exitstatus != 0
+      raise GitException.new(cmd, exitstatus, out)
     end
 
     out
-  end
-
-  def exitstatus
-    @exitstatus
-  end
-
-  def failed?
-    @exitstatus != 0
   end
 
   private
