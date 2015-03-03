@@ -29,7 +29,10 @@ ObjectSpace.each_object(Class).select{|clazz| clazz < RIM::Command::Command }.ea
     commands[name] = cmd;
   end
 end
+ARGV.unshift("help") if ARGV.empty?
 cmdname = opt_parse()
-cmd = commands[cmdname]
-cmd.logger = logger
-cmd.invoke()
+if cmdname
+  cmd = commands[cmdname]
+  cmd.logger = logger
+  cmd.invoke()
+end
