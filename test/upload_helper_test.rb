@@ -61,6 +61,7 @@ private
       end
       s.execute("git add .")
       s.execute("git commit -m 'Initial commit'")
+      s.execute("git checkout --detach #{branch}")
     end
     `git clone #{@ws_remote_dir} #{@ws_dir}`
   end

@@ -29,13 +29,14 @@ class CommandHelper < Processor
   def modules_from_manifest(path)
     manifest = read_manifest(path)
     remote_url = URI.parse(manifest.remote_url ? manifest.remote_url : "ssh://gerrit/")
+    branch_decoration = remote_url.start_with?("ssh://gerrit/") ? "refs/for/%s" : nil
     manifest.modules.each do |mod|
       if remote_url.relative?
         remote_path = File.join(manifest.remote_url, mod.remote_path) 
       else
         remote_path = remote_url.merge(mod.remote_path).to_s
       end
-      add_module_info(ModuleInfo.new(remote_path, mod.local_path, mod.target_revision, mod.ignores))
+      add_module_info(ModuleInfo.new(remote_path, mod.local_path, mod.target_revision, mod.ignores, branch_decoration))
     end
     true
   end

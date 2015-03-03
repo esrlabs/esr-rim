@@ -159,7 +159,7 @@ class GitSession
     out.strip
   end
 
-  def status(dir=nil)
+  def status(dir = nil)
     # -s            short format
     # --ignored     show ignored
     out = execute "git status -s --ignored #{dir}"

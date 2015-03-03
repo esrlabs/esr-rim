@@ -35,8 +35,8 @@ def create_tmp_git(mod)
   git_tmp_path = module_tmp_git_path(mod)
   FileUtils.mkdir_p git_tmp_path
 
-  RIM::git_session(:git_dir => git_tmp_path) do |s|
-    if !File.exist?(git_tmp_path+"/.git")
+  RIM::git_session(git_tmp_path) do |s|
+    if !File.exist?(git_tmp_path + "/.git")
       s.execute("git clone #{mod.remote_url} #{git_tmp_path}")
     else
       s.execute("git fetch #{mod.remote_url}")
@@ -46,26 +46,9 @@ def create_tmp_git(mod)
   git_tmp_path
 end
 
-def checkout_branch(git_dir, branch)
-  RIM::git_session(:git_dir => git_dir) do |s|
-    s.execute("git checkout -f #{branch}")
-  end
-end
-
-def commit_working_copy(git_dir, working_copy_path, ignores = [])
-  RIM::git_session(:work_dir => working_copy_path, :git_dir => git_dir) do |s|
-    FileUtils.cp(FileList[working_copy_path].exclude(ignores.concat([".riminfo"])), git_dir)
-    # do we need to commit something?
-    stat = s.status(git_path)
-    if stat.lines.any?
-      s.execute("git commit #{git_path} -m \"#{msg}\"")
-    end
-  end
-end
-
 def local_changes?(ws_dir, dir=ws_dir)
   stat = nil
-  RIM::git_session(:work_dir => ws_dir) do |s|
+  RIM::git_session(ws_dir) do |s|
     stat = s.status(dir)
   end
   stat.lines.all?{|l| l.ignored?}

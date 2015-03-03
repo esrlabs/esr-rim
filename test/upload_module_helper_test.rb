@@ -25,6 +25,7 @@ class UploadModuleHelperTest < Minitest::Test
       write_file(@remote_git_dir, "readme.txt")
       s.execute("git add .")
       s.execute("git commit -m 'Initial commit'")
+      s.execute("git checkout --detach testbr")
       @initial_rev = s.rev_sha1("HEAD")
     end
     @ws_dir = File.join(test_dir, "ws")
@@ -70,7 +71,7 @@ class UploadModuleHelperTest < Minitest::Test
     cut = RIM::UploadModuleHelper.new(@ws_dir, info, @logger)
     cut.upload(nil, revs)
     RIM::git_session(@remote_git_dir) do |s|
-      s.execute("git checkout rim/#{revs[0]}")
+      s.execute("git checkout testbr")
     end
     assert File.exists?(File.join(@remote_git_dir, "readme.txt"))
     assert File.exists?(File.join(@remote_git_dir, "second.txt"))
