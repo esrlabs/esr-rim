@@ -40,7 +40,7 @@ private
             @logger.error "Module #{@module_info.local_path} is not based on branch. No push can be performed."
           end
         else
-          @logger.error "There are commits for module #{@module_info.local_path} on multiple target revisions (#{info.branches.join(", ")})."
+          @logger.error "There are commits for module #{@module_info.local_path} on multiple target revisions (#{infos.branches.join(", ")})."
         end
       end
       # Finally we're done. Push the changes
