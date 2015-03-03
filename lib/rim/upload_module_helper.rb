@@ -20,8 +20,7 @@ private
 
   # upload the content of the module
   def upload_module_changes(parent_sha1, sha1s)
-    remote_path = module_git_path(@remote_path)
-    clone_or_fetch_repository(@remote_path, remote_path)
+    remote_path = fetch_module
     # search for the first revision that is not 
     tmp_git_path = clone_or_fetch_repository(remote_path, module_tmp_git_path(@remote_path))
     RIM::git_session(tmp_git_path) do |dest|
@@ -73,7 +72,7 @@ private
 
   # get target revision for this module for workspace revision
   def get_riminfo_for_revision(session, sha1)
-    rim_info = RimInfo.from_s(session.execute("git show #{sha1}:#{File.join(@module_info.local_path, RimInfo::InfoFileName)}"))    
+    rim_info = RimInfo.from_s(session.safe_execute("git show #{sha1}:#{File.join(@module_info.local_path, RimInfo::InfoFileName)}", ""))    
   end 
   
   # create update branch for given revision

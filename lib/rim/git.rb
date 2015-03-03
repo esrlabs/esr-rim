@@ -96,12 +96,7 @@ class GitSession
   
   # check whether branch exists
   def has_branch?(branch)
-    begin
-      execute "git show-ref refs/heads/#{branch}"
-      return true
-    rescue GitException => e
-      return false
-    end
+    !safe_execute("git show-ref refs/heads/#{branch}", "").empty?
   end 
 
   # returns the parent commits of rev as SHA-1s 
@@ -169,17 +164,27 @@ class GitSession
     parse_status(out)
   end
 
+  def safe_execute(cmd, error_return = nil)
+    begin
+      return execute(cmd)
+    rescue GitException
+      return error_return
+    end
+  end
+
   def execute(cmd)
     raise "git command has to start with 'git'" unless cmd.start_with? "git "
     cmd.slice!("git ")
-    options = (@execute_dir.empty? ? "" : " -C #{@execute_dir}") + (@work_dir.empty? ? "" : " --work-tree=#{File.expand_path(@work_dir)}") + (@git_dir.empty? ? "" : " --git-dir=#{File.expand_path(@git_dir)}") 
+    options = (@execute_dir.empty? ? "" : " -C #{@execute_dir}") \
+        + (@work_dir.empty? ? "" : " --work-tree=#{File.expand_path(@work_dir)}") \
+        + (@git_dir.empty? ? "" : " --git-dir=#{File.expand_path(@git_dir)}") 
     cmd = "git#{options} #{cmd} 2>&1"
 
     out = `#{cmd}`
     exitstatus = $?.exitstatus
 
     invid = self.class.next_invocation_id.to_s.ljust(4)
-    @logger.debug "git##{invid} \"#{cmd}\"" 
+    @logger.debug "git##{invid} \"#{cmd}\" => #{exitstatus}" 
 
     out.split(/\r?\n/).each do |ol|
       @logger.debug "git##{invid} out : #{ol}"

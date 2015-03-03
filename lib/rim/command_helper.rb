@@ -10,9 +10,14 @@ class CommandHelper < Processor
 
   include Manifest
 
-  def initialize(workspace_root, logger)
+  def initialize(workspace_root, logger, module_infos = nil)
     super(workspace_root, logger)
     @logger = logger
+    if module_infos
+      module_infos.each do |m|
+        add_module_info(m)
+      end
+    end
   end
 
   # check whether workspace is not touched

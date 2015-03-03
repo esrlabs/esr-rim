@@ -54,7 +54,7 @@ class RimInfo
     checksum = content[0..39]
     # exclude \n after checksum
     content = content[41..-1]
-    if checksum == calc_sha1(content)
+    if content && checksum == calc_sha1(content)
       content.split("\n").each do |l|
         col = l.index(":")
         if col

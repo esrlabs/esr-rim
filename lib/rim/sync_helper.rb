@@ -5,10 +5,9 @@ module RIM
 
 class SyncHelper < CommandHelper
 
-  def initialize(workspace_root, logger)
-    super(workspace_root, logger)
+  def initialize(workspace_root, logger, module_infos = nil)
     @module_helpers = []
-    @logger = logger
+    super(workspace_root, logger, module_infos)
   end
 
   # called to add a module info

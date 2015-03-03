@@ -5,20 +5,19 @@ module RIM
 
 class UploadHelper < CommandHelper
 
-  def initialize(workspace_root, logger)
-    super(workspace_root, logger)
+  def initialize(workspace_root, logger, module_infos = nil)
     @module_helpers = []
-    @logger = logger
+    super(workspace_root, logger, module_infos)
   end
 
   # upload all module changes into corresponding remote repositories
   def upload
     # get the name of the current workspace branch
-    RIM::git_session(:work_dir => @ws_root) do |s|
+    RIM::git_session(@ws_root) do |s|
       branch = s.current_branch
       if !branch.start_with?("rim/")
         begin
-          sha1 = rev_sha1(branch)
+          sha1 = s.rev_sha1(branch)
           upload_modules(get_upload_revisions(s, sha1))
         ensure
           s.execute("git checkout #{branch}")
@@ -29,7 +28,6 @@ class UploadHelper < CommandHelper
     end
   end
 
-protected
   # called to add a module info
   def add_module_info(module_info)
     @module_helpers.push(UploadModuleHelper.new(@ws_root, module_info, @logger))

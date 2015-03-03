@@ -28,6 +28,7 @@ protected
         s.execute("git remote update")
       end
     end
+    git_path
   end
 
   # prepare empty folder: remove all files not on the ignore list and empty folders
