@@ -33,7 +33,7 @@ private
           if dest.has_branch?(remote_branch)
             infos.rev_infos.each do |rev_info|
               local_branch = create_update_branch(dest, rev_info.dest_sha1, rev_info.src_sha1) if !local_branch
-              copy_revision_files(src, rev_info.src_sha1, tmp_git_path, infos.rev_infos.last.rim_info.ignores)
+              copy_revision_files(src, rev_info.src_sha1, tmp_git_path, rev_info.rim_info.ignores)
               commit_changes(dest, local_branch, rev_info.src_sha1, rev_info.message)
             end
           else
