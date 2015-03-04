@@ -10,7 +10,7 @@ class Status < Command
     opts.description = "Prints commits and their RIM status"
     opts.separator ""
     opts.separator "Without revision arguments checks the current branch and all local ancestors."
-    opts.separator "Otherwise checks <to-rev> and all its ancestors excluding ancestors of <from-rev>"
+    opts.separator "Otherwise checks <to-rev> and ancestors without <from-rev> and ancestors."
     opts.separator ""
     opts.on("-d", "--detailed", "print detailed status") do
       @detailed = true
@@ -57,24 +57,25 @@ class Status < Command
     return if stat.git_rev && stat.parents.empty?
     dirty_mods = stat.modules.select{|m| m.dirty?}
     stat_info = dirty_mods.empty? ? "[   OK]" : "[DIRTY]"
+    headline = ""
     if stat.git_rev
       out = gs.execute "git rev-list --format=oneline -n 1 #{stat.git_rev}" 
       if out =~ /^(\w+) (.*)/
         sha1, comment = $1, $2
-        @logger.info "#{stat_info} #{sha1[0..6]} #{comment}"
+        headline += "#{stat_info} #{sha1[0..6]} #{comment}"
       end
     else
-      @logger.info "#{stat_info} ------- uncommitted changes"
+      headline += "#{stat_info} ------- uncommitted changes"
     end
     if @detailed
-      puts
+      @logger.info headline
       dirty_mods.each do |m|
         @logger.info "        - #{m.dir}"
       end
     elsif dirty_mods.size > 0
-      @logger.info " (#{dirty_mods.size} modules dirty)"
+      @logger.info "#{headline} (#{dirty_mods.size} modules dirty)"
     else
-      @logger.info
+      @logger.info headline
     end
     stat.parents.each do |p|
       print_status(gs, p)
