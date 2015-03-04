@@ -1,5 +1,8 @@
+$:.unshift(File.dirname(__FILE__)+"/lib")
+
 require 'rubygems/package_task'
 require 'rdoc/task'
+require 'rim/version'
 
 DocFiles = [
   "README.md", "CHANGELOG"
@@ -7,7 +10,7 @@ DocFiles = [
 
 RTextGemSpec = Gem::Specification.new do |s|
   s.name = "esr-rim"
-  s.version = "0.1.0"
+  s.version = RIM::Version::Version
   s.date = Time.now.strftime("%Y-%m-%d")
   s.summary = "RIM - multi git tool"
   s.description = "RIM lets you work with multiple git repositories from within one single git repository."

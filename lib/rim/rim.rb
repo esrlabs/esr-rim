@@ -6,6 +6,7 @@ require 'rim/command/upload'
 require 'rim/command/status'
 require 'rim/git'
 require 'rim/rim_exception'
+require 'rim/version'
 
 include Subcommands
 
@@ -20,6 +21,18 @@ logger.formatter = proc do |severity, time, progname, msg|
 end
 
 RIM::GitSession.logger = logger
+
+prog_info = "rim, version #{RIM::Version::Version}, Copyright (c) 2015, esrlabs.com"
+
+global_options do |opts|
+  opts.banner = prog_info
+  opts.separator ""
+  opts.separator "Usage: rim <command> [options]"
+  opts.on("-v","--version", "Print version info") do
+    logger.info prog_info
+    exit
+  end
+end
 
 commands = {}
 add_help_option
