@@ -37,7 +37,13 @@ def module_tmp_git_path(remote_path)
 end
 
 def remote_path(remote_url)
-  remote_url.sub(/^\w+:\/\//,'').gsub(/\.\.[\\\/]/,'')
+  remote_url.
+    # protocol specifier, e.g. ssh://
+    sub(/^\w+:\/\//,'').
+    # windows drive letter 
+    sub(/^(\w):/,'\1').
+    # make sure we don't .. up in a filesystem
+    gsub(/\.\.[\\\/]/,'')
 end
 
 def create_tmp_git(mod)
