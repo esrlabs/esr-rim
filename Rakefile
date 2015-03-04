@@ -6,12 +6,13 @@ DocFiles = [
   ]
 
 RTextGemSpec = Gem::Specification.new do |s|
-  s.name = "rim"
+  s.name = "esr-rim"
   s.version = "0.1.0"
   s.date = Time.now.strftime("%Y-%m-%d")
   s.summary = "RIM - multi git tool"
   s.description = "RIM lets you work with multiple git repositories from within one single git repository."
   s.authors = "ESR Labs AG"
+  s.homepage = "http://esrlabs.com"
   s.add_dependency('subcommand', '>= 1.0.6')
   gemfiles = Rake::FileList.new
   gemfiles.include("{lib,test}/**/*")
