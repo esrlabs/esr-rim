@@ -20,6 +20,8 @@ RTextGemSpec = Gem::Specification.new do |s|
   s.files = gemfiles
   s.rdoc_options = ["--main", "README.md", "-x", "test"]
   s.extra_rdoc_files = DocFiles
+  s.bindir = "bin"
+  s.executables = ["rim"]
 end
 
 RDoc::Task.new do |rd|
