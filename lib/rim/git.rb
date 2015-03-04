@@ -189,6 +189,7 @@ class GitSession
     if block_given?
       yield out, exception  
     elsif exception
+      @logger.error "git##{invid} \"#{cmd}\" => #{exitstatus}" 
       raise exception
     end
 

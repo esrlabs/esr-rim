@@ -113,6 +113,57 @@ class UploadHelperTest < Minitest::Test
       assert s.execute("git show -s --format=%B HEAD~1").start_with?("First change")
     end
   end
+
+  def test_files_of_ammended_commits_are_uploaded
+    mod1_info = create_module_git("mod1")
+    create_ws_git("testbr")
+    sync_helper = RIM::SyncHelper.new(@ws_dir, @logger, [mod1_info])
+    sync_helper.sync
+    RIM::git_session(@ws_dir) do |s|
+      s.execute("git rebase rim/testbr")
+    end
+    shas = []
+    # make two changes to module
+    RIM::git_session(@ws_dir) do |s|
+      `echo ' appended' >> #{File.join(@ws_dir, "mod1/readme.txt")}`
+      s.execute("git commit . -m 'First change'")
+      shas.push(s.rev_sha1("HEAD"))  
+      `echo 'Test' > #{File.join(@ws_dir, "mod1/new_file.txt")}`
+      `echo 'Test' > #{File.join(@ws_dir, "mod1/new_file2.txt")}`
+      s.execute("git add .")
+      s.execute("git commit . -m 'Second change'")
+      shas.push(s.rev_sha1("HEAD"))  
+    end
+    cut = RIM::UploadHelper.new(@ws_dir, @logger, [mod1_info])
+    cut.upload
+    RIM::git_session(mod1_info.remote_url) do |s|
+      s.execute("git checkout master")
+      assert File.exist?(File.join(@remote_git_dir, "mod1/readme.txt"))
+      assert File.exist?(File.join(@remote_git_dir, "mod1/new_file.txt"))
+      assert File.exist?(File.join(@remote_git_dir, "mod1/new_file2.txt"))
+      assert s.execute("git show -s --format=%B HEAD").start_with?("Second change")
+      assert s.execute("git show -s --format=%B HEAD~1").start_with?("First change")
+      s.execute("git checkout --detach master")
+      s.execute("git branch -D master")
+    end
+    # reset testbr now on previous commit and commit new change
+    RIM::git_session(@ws_dir) do |s|
+      s.execute("git checkout -B testbr HEAD~1")
+      `echo 'Test' > #{File.join(@ws_dir, "mod1/test_file.txt")}`
+      s.execute("git add .")
+      s.execute("git commit . -m 'Third change'")      
+    end
+    cut.upload
+    RIM::git_session(mod1_info.remote_url) do |s|
+      s.execute("git checkout master")
+      assert File.exist?(File.join(@remote_git_dir, "mod1/readme.txt"))
+      assert File.exist?(File.join(@remote_git_dir, "mod1/test_file.txt"))
+      assert !File.exist?(File.join(@remote_git_dir, "mod1/new_file.txt"))
+      assert !File.exist?(File.join(@remote_git_dir, "mod1/new_file2.txt"))
+      assert s.execute("git show -s --format=%B HEAD").start_with?("Third change")
+      assert s.execute("git show -s --format=%B HEAD~1").start_with?("First change")
+    end
+  end
   
 private
   def create_ws_git(branch = "master")

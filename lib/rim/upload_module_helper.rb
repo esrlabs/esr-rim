@@ -32,7 +32,7 @@ private
           remote_branch = @module_info.remote_branch_decoration ? @module_info.remote_branch_decoration % infos.branches[0] : infos.branches[0]
           if dest.has_branch?(remote_branch)
             infos.rev_infos.each do |rev_info|
-              local_branch = create_update_branch(dest, rev_info.dest_sha1, rev_info.src_sha1) if !local_branch
+              local_branch = create_update_branch(dest, infos.parent_sha1, rev_info.src_sha1) if !local_branch
               copy_revision_files(src, rev_info.src_sha1, tmp_git_path, rev_info.rim_info.ignores)
               commit_changes(dest, local_branch, rev_info.src_sha1, rev_info.message)
             end
@@ -56,31 +56,29 @@ private
   def get_branches_and_revision_infos(src_session, dest_session, parent_sha1, sha1s)
     infos = []
     branches = []
+    dest_parent_sha1 = nil
     (sha1s.size() - 1).step(0, -1) do |i|
       info = get_revision_info(src_session, dest_session, sha1s[i])
-      if info
+      if !info.dest_sha1 && info.rim_info.upstream
         infos.unshift(info)
         branches.push(info.rim_info.upstream) if !branches.include?(info.rim_info.upstream)
       else
-        parent_sha1 = sha1s[i - 1] if i > 0
+        dest_parent_sha1 = info.dest_sha1
         break
       end
     end
-    return Struct.new(:branches, :parent_sha1, :rev_infos).new(branches, parent_sha1, infos)      
+    dest_parent_sha1 = get_riminfo_for_revision(src_session, parent_sha1).revision if !dest_parent_sha1
+    dest_parent_sha1 = infos.first.rim_info.revision if !dest_parent_sha1 && !infos.empty?
+    return Struct.new(:branches, :parent_sha1, :rev_infos).new(branches, dest_parent_sha1, infos)      
   end
+  
+  RevisionInfo = Struct.new(:dest_sha1, :src_sha1, :rim_info, :message)
 
   # collect infos for a revision
   def get_revision_info(src_session, dest_session, src_sha1)
-    info = nil
     dest_sha1 = dest_session.execute("git tag --list rim-#{src_sha1}")
-    if dest_sha1.empty?
-      rim_info = get_riminfo_for_revision(src_session, src_sha1)
-      msg = src_session.execute("git show -s --format=%B #{src_sha1}")
-      if rim_info.revision
-        info = Struct.new(:dest_sha1, :src_sha1, :rim_info, :message).new(rim_info.revision, src_sha1, rim_info, msg)
-      end
-    end
-    info
+    msg = src_session.execute("git show -s --format=%B #{src_sha1}") 
+    RevisionInfo.new(dest_sha1.empty? ? nil : dest_sha1, src_sha1, get_riminfo_for_revision(src_session, src_sha1), msg)
   end
   
   # clone or fetch repository
