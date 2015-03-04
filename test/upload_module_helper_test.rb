@@ -24,7 +24,7 @@ class UploadModuleHelperTest < Minitest::Test
       s.execute("git checkout -B testbr")
       write_file(@remote_git_dir, "readme.txt")
       s.execute("git add .")
-      s.execute("git commit -m 'Initial commit'")
+      s.execute("git commit -m \"Initial commit\"")
       s.execute("git checkout --detach testbr")
       @initial_rev = s.rev_sha1("HEAD")
     end
@@ -36,7 +36,7 @@ class UploadModuleHelperTest < Minitest::Test
       s.execute("git checkout -B master")
       write_file(@ws_dir, "initial.txt")
       s.execute("git add .")
-      s.execute("git commit -m 'Initial commit'")
+      s.execute("git commit -m \"Initial commit\"")
       @initial_ws_rev = s.rev_sha1("HEAD")
     end
     @logger = Logger.new($stdout)
@@ -57,14 +57,14 @@ class UploadModuleHelperTest < Minitest::Test
     revs = []
     RIM::git_session(@ws_dir) do |s|
       s.execute("git add --all #{@ws_dir}")
-      s.execute("git commit -m 'Initial workspace commit'")
+      s.execute("git commit -m \"Initial workspace commit\"")
       write_file(@ws_dir, "nomodulefile.txt")
       s.execute("git add --all #{@ws_dir}")
-      s.execute("git commit -m 'Added non module file'")
+      s.execute("git commit -m \"Added non module file\"")
       revs.push(s.rev_sha1("HEAD"))
       write_file(mod_dir, "second.txt")
       s.execute("git add --all #{@ws_dir}")
-      s.execute("git commit -m 'Added module file'")
+      s.execute("git commit -m \"Added module file\"")
       revs.push(s.rev_sha1("HEAD"))
     end
     info = RIM::ModuleInfo.new(@remote_git_dir, "module", "testbr")

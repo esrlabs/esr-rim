@@ -60,11 +60,11 @@ class UploadHelperTest < Minitest::Test
     # make two changes to module
     RIM::git_session(@ws_dir) do |s|
       `echo ' appended' >> #{File.join(@ws_dir, "mod1/readme.txt")}`
-      s.execute("git commit . -m 'First change'")
+      s.execute("git commit . -m \"First change\"")
       shas.push(s.rev_sha1("HEAD"))  
       `echo 'Test' > #{File.join(@ws_dir, "mod1/new_file.txt")}`
       s.execute("git add .")
-      s.execute("git commit . -m 'Second change'")
+      s.execute("git commit . -m \"Second change\"")
       shas.push(s.rev_sha1("HEAD"))  
     end
     cut = RIM::UploadHelper.new(@ws_dir, @logger, [mod1_info])
@@ -90,11 +90,11 @@ class UploadHelperTest < Minitest::Test
     # make two changes to module
     RIM::git_session(@ws_dir) do |s|
       `echo ' appended' >> #{File.join(@ws_dir, "mod1/readme.txt")}`
-      s.execute("git commit . -m 'First change'")
+      s.execute("git commit . -m \"First change\"")
       shas.push(s.rev_sha1("HEAD"))  
       `echo 'Test' > #{File.join(@ws_dir, "mod1/new_file.txt")}`
       s.execute("git add .")
-      s.execute("git commit . -m 'Second change'")
+      s.execute("git commit . -m \"Second change\"")
       shas.push(s.rev_sha1("HEAD"))  
     end
     cut = RIM::UploadHelper.new(@ws_dir, @logger, [mod1_info])
@@ -120,7 +120,7 @@ class UploadHelperTest < Minitest::Test
     # make two changes to module
     RIM::git_session(@ws_dir) do |s|
       `echo ' appended' >> #{File.join(@ws_dir, "mod1/readme.txt")}`
-      s.execute("git commit . -m 'First change'")
+      s.execute("git commit . -m \"First change\"")
       shas.push(s.rev_sha1("HEAD"))  
       `echo 'Test' > #{File.join(@ws_dir, "mod1/new_file.txt")}`
       # Adjust rim_info to contain the file as ignored file
@@ -129,7 +129,7 @@ class UploadHelperTest < Minitest::Test
       rim_info.to_dir(File.join(@ws_dir, "mod1"))
       `echo 'Test' > #{File.join(@ws_dir, "mod1/new_file2.txt")}`
       s.execute("git add .")
-      s.execute("git commit . -m 'Second change'")
+      s.execute("git commit . -m \"Second change\"")
       shas.push(s.rev_sha1("HEAD"))  
     end
     cut = RIM::UploadHelper.new(@ws_dir, @logger, [mod1_info])
@@ -156,12 +156,12 @@ class UploadHelperTest < Minitest::Test
     # make two changes to module
     RIM::git_session(@ws_dir) do |s|
       `echo ' appended' >> #{File.join(@ws_dir, "mod1/readme.txt")}`
-      s.execute("git commit . -m 'First change'")
+      s.execute("git commit . -m \"First change\"")
       shas.push(s.rev_sha1("HEAD"))  
       `echo 'Test' > #{File.join(@ws_dir, "mod1/new_file.txt")}`
       `echo 'Test' > #{File.join(@ws_dir, "mod1/new_file2.txt")}`
       s.execute("git add .")
-      s.execute("git commit . -m 'Second change'")
+      s.execute("git commit . -m \"Second change\"")
       shas.push(s.rev_sha1("HEAD"))  
     end
     cut = RIM::UploadHelper.new(@ws_dir, @logger, [mod1_info])
@@ -181,7 +181,7 @@ class UploadHelperTest < Minitest::Test
       s.execute("git checkout -B testbr HEAD~1")
       `echo 'Test' > #{File.join(@ws_dir, "mod1/test_file.txt")}`
       s.execute("git add .")
-      s.execute("git commit . -m 'Third change'")      
+      s.execute("git commit . -m \"Third change\"")      
     end
     cut.upload
     RIM::git_session(mod1_info.remote_url) do |s|
@@ -208,7 +208,7 @@ private
         f.write("Content")
       end
       s.execute("git add .")
-      s.execute("git commit -m 'Initial commit'")
+      s.execute("git commit -m \"Initial commit\"")
       s.execute("git checkout --detach #{branch}")
     end
     `git clone #{@ws_remote_dir} #{@ws_dir}`
@@ -224,7 +224,7 @@ private
         f.write("Content.") 
       end
       s.execute("git add .")
-      s.execute("git commit -m 'Initial commit'")
+      s.execute("git commit -m \"Initial commit\"")
       s.execute("git checkout --detach #{branch}")
     end
     return RIM::ModuleInfo.new(git_dir, name, branch, nil, remote_branch_format)

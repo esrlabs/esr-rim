@@ -55,11 +55,11 @@ class SyncHelperTest < Minitest::Test
     cut.sync
     `echo ' changed' >> #{File.join(@ws_dir, "readme")}`
     RIM::git_session(@ws_dir) do |s|
-      s.execute("git commit . -m 'Changed ws file'")
+      s.execute("git commit . -m \"Changed ws file\"")
     end
     `echo ' changed' >> #{File.join(mod1_info.remote_url, "readme.txt")}`
     RIM::git_session(mod1_info.remote_url) do |f|
-      f.execute("git commit . -m 'Changed mod1 file'")
+      f.execute("git commit . -m \"Changed mod1 file\"")
     end
     cut.sync
     RIM::git_session(@ws_dir) do |s|
@@ -85,7 +85,7 @@ class SyncHelperTest < Minitest::Test
     cut.sync
     `echo ' changed' >> #{File.join(@ws_remote_dir, "readme")}`
     RIM::git_session(@ws_remote_dir) do |s|
-      s.execute("git commit . -m 'Changed ws file'")
+      s.execute("git commit . -m \"Changed ws file\"")
     end
     RIM::git_session(@ws_dir) do |s|
       s.execute("git pull")
@@ -110,7 +110,7 @@ private
         f.write("Content")
       end
       s.execute("git add .")
-      s.execute("git commit -m 'Initial commit'")
+      s.execute("git commit -m \"Initial commit\"")
     end
     `git clone #{@ws_remote_dir} #{@ws_dir}`
   end
@@ -125,7 +125,7 @@ private
         f.write("Content.") 
       end
       s.execute("git add .")
-      s.execute("git commit -m 'Initial commit'")
+      s.execute("git commit -m \"Initial commit\"")
     end
     return RIM::ModuleInfo.new(git_dir, name, branch)
   end
