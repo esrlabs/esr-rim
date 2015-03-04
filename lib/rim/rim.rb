@@ -26,16 +26,22 @@ end
 RIM::GitSession.logger = logger
 
 RIM::git_session(".") do |s|
-  version = s.git_version
-  if version
-    cmp_str = lambda {|v| v.split(".").collect{|p| p.rjust(10)}.join}
-    if cmp_str.call(version) < cmp_str.call(MinimumGitVersion)
-      logger.info "rim needs git version #{MinimumGitVersion} or higher"
-      logger.info "get git at http://git-scm.com/"
-      exit(1)
+  begin
+    version = s.git_version
+    if version
+      cmp_str = lambda {|v| v.split(".").collect{|p| p.rjust(10)}.join}
+      if cmp_str.call(version) < cmp_str.call(MinimumGitVersion)
+        logger.info "Rim needs git version #{MinimumGitVersion} or higher"
+        logger.info "Please update git from http://git-scm.com/"
+        exit(1)
+      end
+    else
+      # version unknown, don't complain
     end
-  else
-    # version unknown, don't complain
+  rescue RIM::GitException
+    logger.info "It seems git is not installed or it's not in your path"
+    logger.info "Please update your path or find git at http://git-scm.com/"
+    exit(1)
   end
 end
 
