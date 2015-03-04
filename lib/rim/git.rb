@@ -160,6 +160,16 @@ class GitSession
     out.strip
   end
 
+  # 3 most significant numbers of git version of nil if it can't be determined
+  def git_version
+    out = execute("git --version")
+    if out =~ /^git version (\d+\.\d+\.\d+)/
+      $1
+    else
+      nil
+    end
+  end
+
   def status(dir = nil)
     # -s            short format
     # --ignored     show ignored
