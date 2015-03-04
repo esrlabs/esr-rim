@@ -6,28 +6,53 @@ module Command
 class Status < Command
 
   def initialize(opts)
-    opts.banner = "Usage: rim status"
-    opts.description = "Print local commits and their status"
+    opts.banner = "Usage: rim status [--verify-clean] [<from-rev>..<to-rev>]"
+    opts.description = <<-END
+Prints commits and their RIM status.
+
+Without revision arguments checks the current branch and all local ancestors.
+Otherwise checks <to-rev> and all its ancestors excluding ancestors of <from-rev>.
+
+With the --verify-clean options, exit with error code 1 if any commits are in dirty state.
+END
     opts.on("-d", "--detailed", "print detailed status") do
       @detailed = true
+    end
+    opts.on("--verify-clean", "exit with error code 1 if commits are dirty") do
+      @verify_clean = true
     end
   end
 
   def invoke()
     root = project_git_dir
+    rev_range = ARGV.shift
+    stat = nil
     RIM.git_session(root) do |gs|
       sb = RIM::StatusBuilder.new
-      if gs.uncommited_changes?
-        stat = sb.fs_status(root)
+      if rev_range
+        from_rev, to_rev = rev_range.split("..")
+        stat = sb.rev_history_status(gs, to_rev, :stop_rev => from_rev)
+        print_status(gs, stat)
+      else
+        if gs.uncommited_changes?
+          stat = sb.fs_status(root)
+          print_status(gs, stat)
+        end
+        branch = gs.current_branch_name
+        stat = sb.rev_history_status(gs, branch)
         print_status(gs, stat)
       end
-      branch = gs.current_branch_name
-      stat = sb.rev_history_status(gs, branch)
-      print_status(gs, stat)
+    end
+    if @verify_clean && any_dirty?(stat)
+      exit(1)
     end
   end
 
   private 
+
+  def any_dirty?(stat)
+    stat.dirty? || stat.parents.any?{|p| any_dirty?(p)}
+  end
 
   def print_status(gs, stat)
     # don't print the last (remote) status nodes

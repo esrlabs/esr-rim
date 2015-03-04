@@ -9,18 +9,25 @@ class StatusBuilder
   # status object tree for revision rev
   # returns the root status object which points to any parent status objects
   # note that merge commits mean that the status tree branches
-  # stops traversing when commits with remote labels on them are found
-  # the leafs of the tree returned are commits to which remote labels point to
-  # or ones which have no parents
-  def rev_history_status(git_session, rev)
-    # remote revs are where we stop traversal
-    non_remote_revs = {}
-    git_session.all_reachable_non_remote_revs(rev).each do |r| 
-      non_remote_revs[r] = true
+  # stops traversing a specific branch when a commit is found which is an ancestor
+  # of :stop_rev or any remote branch if :stop_rev is not provided 
+  # the leafs of the tree are the stop commits or commits which have no parents
+  def rev_history_status(git_session, rev, options={})
+    stop_rev = options[:stop_rev]
+    relevant_revs = {}
+    if stop_rev
+      git_session.execute("git rev-list #{rev} \"^#{stop_rev}\"").split("\n").each do |r|
+        relevant_revs[r] = true
+      end
+    else
+      # remote revs are where we stop traversal
+      git_session.all_reachable_non_remote_revs(rev).each do |r| 
+        relevant_revs[r] = true
+      end
     end
     # make sure we deal only with sha1s
     rev = git_session.rev_sha1(rev)
-    build_rev_history_status(git_session, rev, non_remote_revs)
+    build_rev_history_status(git_session, rev, relevant_revs)
   end
 
   # status object for revision rev
@@ -43,14 +50,14 @@ class StatusBuilder
 
   private
 
-  def build_rev_history_status(gs, rev, non_remote_revs, status_cache={})
+  def build_rev_history_status(gs, rev, relevant_revs, status_cache={})
     return status_cache[rev] if status_cache[rev]
     stat = rev_status(gs, rev)
     status_cache[rev] = stat
-    if non_remote_revs[rev]
+    if relevant_revs[rev]
       # for each parent commit
       gs.parent_revs(rev).each do |p|
-        stat.parents << build_rev_history_status(gs, p, non_remote_revs, status_cache)
+        stat.parents << build_rev_history_status(gs, p, relevant_revs, status_cache)
       end
     end
     stat
