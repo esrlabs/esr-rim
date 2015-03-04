@@ -12,6 +12,7 @@ class UploadHelper < CommandHelper
 
   # upload all module changes into corresponding remote repositories
   def upload
+    check_ready
     # get the name of the current workspace branch
     RIM::git_session(@ws_root) do |s|
       branch = s.current_branch
@@ -23,7 +24,7 @@ class UploadHelper < CommandHelper
           s.execute("git checkout #{branch}")
         end
       else
-        @logger.error "The current git branch '#{branch}' is a rim integration branch. Please switch to a non rim branch to proceed."
+        raise RimException.new("The current git branch '#{branch}' is a rim integration branch. Please switch to a non rim branch to proceed.")
       end
     end
   end

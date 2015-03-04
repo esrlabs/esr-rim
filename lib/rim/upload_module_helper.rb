@@ -37,10 +37,12 @@ private
               commit_changes(dest, local_branch, rev_info.src_sha1, rev_info.message)
             end
           else
-            @logger.error "Module #{@module_info.local_path} is not based on branch. No push can be performed."
+            raise RimException.new("Module #{@module_info.local_path} is not based on branch. No push can be performed.")
           end
+        elsif infos.branches.size == 0
+          @logger.info("No changes to commit for module #{@module_info.local_path}.")
         else
-          @logger.error "There are commits for module #{@module_info.local_path} on multiple target revisions (#{infos.branches.join(", ")})."
+          raise RimException.new("There are commits for module #{@module_info.local_path} on multiple target revisions (#{infos.branches.join(", ")}).")
         end
       end
       # Finally we're done. Push the changes
@@ -50,6 +52,7 @@ private
         dest.execute("git push #{@module_info.remote_url} #{local_branch}:#{push_branch}")
         dest.execute("git checkout --detach #{local_branch}")
         dest.execute("git branch -D #{local_branch}")
+        @logger.info("Commited changes for module #{@module_info.local_path} to remote branch #{push_branch}.")
       end                              
     end
   end

@@ -34,8 +34,8 @@ class CommandHelper < Processor
     FileHelper.get_relative_path(path, @ws_root)
   end
 
-  def create_module_info(remote_url, local_url, local_path, target_revision, ignores)
-    absolute_remote_url = get_absolute_remote_url(remote_url, local_url ? File.expand_path(".") : nil)
+  def create_module_info(remote_url, resolve_mode, local_path, target_revision, ignores)
+    absolute_remote_url = get_absolute_remote_url(remote_url, resolve_mode)
     ModuleInfo.new(absolute_remote_url, get_relative_path(local_path), target_revision, ignores, get_remote_branch_format(absolute_remote_url))
   end
 
@@ -51,9 +51,9 @@ class CommandHelper < Processor
     path = File.expand_path(path)
     if File.file?(File.join(path, RimInfo::InfoFileName))
       rim_info = RimInfo.from_dir(path)
-      remote_url = get_absolute_remote_url(opts.has_key?(:remote_url) ? opts[:remote_url] : rim_info.remote_url)
       add_module_info(create_module_info(opts.has_key?(:remote_url) ? opts[:remote_url] : rim_info.remote_url, \
-          path, opts.has_key?(:target_revision) ? opts[:target_revision] : rim_info.upstream, \
+          opts.has_key?(:resolve_mode) ? opts[:resolve_mode] : nil, path, \
+          opts.has_key?(:target_revision) ? opts[:target_revision] : rim_info.upstream, \
           opts.has_key?(:ignores) ? opts[:ignores] : rim_info.ignores))
     else
       raise RimException.new("No module info found in '#{path}'.") 
@@ -76,12 +76,17 @@ class CommandHelper < Processor
 
 private
 
-  def get_absolute_remote_url(remote_url, base = nil)
-    base_url = URI.parse(base || GerritServer)
-    if base_url.relative?
-      File.expand_path(remote_url, base)
+  def get_absolute_remote_url(remote_url, mode)
+    if mode == :absolute
+      remote_url
     else
-      base_url.merge(remote_url).to_s
+      base = mode == :local ? File.expand_path(".") : GerritServer
+      base_url = URI.parse(base)
+      if base_url.relative?
+        File.expand_path(remote_url, base)
+      else
+        base_url.merge(remote_url).to_s
+      end
     end
   end
 

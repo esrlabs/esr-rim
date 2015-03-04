@@ -41,5 +41,8 @@ if cmdname
     e.messages.each do |m|
       logger.error(m)
     end
+  rescue Exception => e
+    logger.error(e.message)
+    puts e.backtrace
   end
 end

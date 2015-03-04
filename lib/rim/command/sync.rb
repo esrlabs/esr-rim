@@ -26,7 +26,7 @@ class Sync < Command
       @module_options[:remote_url] = url 
     end
     opts.on("-l", "--local", "If the remote URL is relative this option can be used to indicate that the URL is a local repository relative to working directory") do
-      @module_options[:local] = true
+      @module_options[:resolve_mode] = :local
     end
     opts.on("-t", "--target-revision=REVISION", String, "Set the target revision of the module.") do |target_revision|
       @module_options[:target_revision] = target_revision
@@ -51,6 +51,7 @@ class Sync < Command
             @module_options[:ignores]))
       end 
     else
+      @module_options[:resolve_mode] = :absolute
       helper.module_from_path(ARGV[0] || ".", @module_options)
     end
     helper.sync                

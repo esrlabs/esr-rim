@@ -7,6 +7,7 @@ module RIM
 class GitException < Exception
   attr_reader :cmd, :exitstatus, :out
   def initialize(cmd, exitstatus, out)
+    super("git \"#{cmd}\" => #{exitstatus}\n#{out}")
     @cmd = cmd
     @exitstatus = exitstatus
     @out = out
