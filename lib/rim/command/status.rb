@@ -7,13 +7,11 @@ class Status < Command
 
   def initialize(opts)
     opts.banner = "Usage: rim status [--verify-clean] [<from-rev>..<to-rev>]"
-    opts.description = "Prints commits and their RIM status."
-
-# Without revision arguments checks the current branch and all local ancestors.
-# Otherwise checks <to-rev> and all its ancestors excluding ancestors of <from-rev>.
-# 
-# With the --verify-clean options, exit with error code 1 if any commits are in dirty state.
-
+    opts.description = "Prints commits and their RIM status"
+    opts.separator ""
+    opts.separator "Without revision arguments checks the current branch and all local ancestors."
+    opts.separator "Otherwise checks <to-rev> and all its ancestors excluding ancestors of <from-rev>"
+    opts.separator ""
     opts.on("-d", "--detailed", "print detailed status") do
       @detailed = true
     end
