@@ -37,6 +37,10 @@ class RimInfo
     attr_accessor d
   end
 
+  def self.exists?(dir)
+    File.exist?(info_file(dir))
+  end
+
   def self.from_dir(dir)
     mi = self.new
     mi.from_dir(dir)
@@ -74,7 +78,7 @@ class RimInfo
   end
 
   def from_dir(dir)
-    file = info_file(dir)
+    file = RimInfo.info_file(dir)
     if File.exist?(file)
       content = nil
       File.open(file, "rb") do |f|
@@ -85,7 +89,7 @@ class RimInfo
   end
 
   def to_dir(dir)
-    file = info_file(dir)
+    file = RimInfo.info_file(dir)
     content = "\n"
     content << "RIM Info file. You're welcome to read but don't write it.\n"
     content << "Instead, use RIM commands to do the things you want to do.\n"
@@ -113,7 +117,7 @@ class RimInfo
     sha1.hexdigest
   end
 
-  def info_file(dir)
+  def self.info_file(dir)
     dir + "/" + InfoFileName
   end
 

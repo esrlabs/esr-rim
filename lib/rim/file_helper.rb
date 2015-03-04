@@ -5,6 +5,14 @@ module RIM
 
 class FileHelper
 
+  def self.get_relative_path(path, base)
+    Pathname.new(get_absolute_path(path)).relative_path_from(Pathname.new(base)).to_s    
+  end
+  
+  def self.get_absolute_path(path)
+    File.expand_path(path)
+  end
+
   def self.find_matching_files(dir, absolute = true, patterns = "**/*", flags = 0)
     files = []
     dirpath = Pathname.new(dir)
@@ -21,7 +29,7 @@ class FileHelper
   end
   
   def self.remove_empty_dirs(dir)
-    Dir.glob(File.join(dir, "**/")).reverse_each do |d| 
+    Dir.glob(File.join(dir, "/*/**/")).reverse_each do |d| 
       Dir.rmdir d if Dir.entries(d).size == 2
     end
   end

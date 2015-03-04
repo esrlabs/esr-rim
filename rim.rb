@@ -5,6 +5,7 @@ require 'rim/command/sync'
 require 'rim/command/upload'
 require 'rim/command/status'
 require 'rim/git'
+require 'rim/rim_exception'
 
 include Subcommands
 
@@ -34,5 +35,11 @@ cmdname = opt_parse()
 if cmdname
   cmd = commands[cmdname]
   cmd.logger = logger
-  cmd.invoke()
+  begin
+    cmd.invoke()
+  rescue RIM::RimException => e
+    e.messages.each do |m|
+      logger.error(m)
+    end
+  end
 end

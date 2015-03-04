@@ -1,6 +1,7 @@
 require 'fileutils'
 require 'pathname'
 require 'rim/git'
+require 'rim/rim_exception'
 require 'rake'
 
 module RIM
@@ -11,6 +12,15 @@ MaxThreads = 10
 
 def initialize(workspace_root, logger)
   @ws_root = workspace_root
+  while !File.directory?(File.join(@ws_root, ".git"))
+    parent = File.expand_path("..", @ws_root)
+    if parent != @ws_root
+      @ws_root = parent
+    else
+      raise RimException.new("The current path is not part of a git repository.")
+      break
+    end
+  end
   @logger = logger
 end
 
@@ -58,12 +68,17 @@ def each_module_parallel(task_desc, modules)
   if !modules.empty?
     @logger.debug "starting \"#{task_desc}\" for #{modules.size} modules\r"
     threads = []
+    messages = []
     i = 0
     done = 0
     while i == 0 || !threads.empty?
       while threads.size < MaxThreads && i < modules.size
         threads << Thread.new(i) do |i|
-          yield(modules[i], i)
+          begin
+            yield(modules[i], i)
+          rescue RimException => e
+            messages += e.messages
+          end
         end
         i += 1
       end
@@ -78,6 +93,9 @@ def each_module_parallel(task_desc, modules)
           false
         end
       }
+    end
+    if !messages.empty?
+      raise RimException.new(messages)
     end
   end
 end

@@ -17,21 +17,28 @@ class SyncHelper < CommandHelper
 
   # sync all module changes into rim branch
   def sync
+    check_ready
     # get the name of the current workspace branch
     RIM::git_session(@ws_root) do |s|
       branch = s.current_branch
+      rim_branch = "rim/" + branch
+      branch_sha1 = s.has_branch?(rim_branch) ? s.rev_sha1(rim_branch) : ""
       if !branch.start_with?("rim/")
         begin
           remote_rev = get_last_remote_revision(s, branch)
           rev = remote_rev ? remote_rev : branch
-          rim_branch = "rim/" + branch
           checkout_rim_branch(s, rim_branch, rev)
           sync_modules
         ensure
           s.execute("git checkout #{branch}")
         end
       else
-        @logger.error "The current git branch '#{branch}' is a rim integration branch. Please switch to a non rim branch to proceed."
+        raise RimException.new("The current git branch '#{branch}' is a rim integration branch. Please switch to a non rim branch to proceed.")
+      end
+      if s.rev_sha1(rim_branch) != branch_sha1
+        @logger.info("Changes have been commited to branch #{rim_branch}. Rebase to apply changes to workspace.")
+      else
+        @logger.info("No changes.")
       end
     end
   end

@@ -17,7 +17,6 @@ class SyncModuleHelperTest < Minitest::Test
   def setup
     test_dir = empty_test_dir("module_sync_helper_test")
     @remote_git_dir = File.join(test_dir, "remote_git")
-    @ws_dir = File.join(test_dir, "ws")
     FileUtils.mkdir(@remote_git_dir)
     RIM::git_session(@remote_git_dir) do |s|
       s.execute("git init")
@@ -25,6 +24,11 @@ class SyncModuleHelperTest < Minitest::Test
       write_file(@remote_git_dir, "readme.txt")
       s.execute("git add .")
       s.execute("git commit -m 'Initial commit'")
+    end
+    @ws_dir = File.join(test_dir, "ws")
+    FileUtils.mkdir(@ws_dir)
+    RIM::git_session(@ws_dir) do |s|
+      s.execute("git clone #{@remote_git_dir} .")
     end
     @logger = Logger.new($stdout)
   end
