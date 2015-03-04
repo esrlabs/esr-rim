@@ -29,7 +29,7 @@ private
       RIM::git_session(@ws_root) do |src|
         infos = get_branches_and_revision_infos(src, dest, parent_sha1, sha1s)
         if infos.branches.size == 1
-          remote_branch = @module_info.remote_branch_decoration ? @module_info.remote_branch_decoration % infos.branches[0] : infos.branches[0]
+          remote_branch = infos.branches[0]
           if dest.has_branch?(remote_branch)
             infos.rev_infos.each do |rev_info|
               local_branch = create_update_branch(dest, infos.parent_sha1, rev_info.src_sha1) if !local_branch
@@ -45,7 +45,9 @@ private
       end
       # Finally we're done. Push the changes
       if local_branch
-        dest.execute("git push #{@module_info.remote_url} #{local_branch}:#{remote_branch}")
+        push_branch = @module_info.remote_branch_format && !@module_info.remote_branch_format.empty? \
+            ? @module_info.remote_branch_format % remote_branch : remote_branch
+        dest.execute("git push #{@module_info.remote_url} #{local_branch}:#{push_branch}")
         dest.execute("git checkout --detach #{local_branch}")
         dest.execute("git branch -D #{local_branch}")
       end                              
