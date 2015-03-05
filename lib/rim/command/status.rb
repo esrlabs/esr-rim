@@ -6,7 +6,7 @@ module Command
 class Status < Command
 
   def initialize(opts)
-    opts.banner = "Usage: rim status [--verify-clean] [<from-rev>..<to-rev>]"
+    opts.banner = "Usage: rim status [<options>] [<from-rev>..<to-rev>]"
     opts.description = "Prints commits and their RIM status"
     opts.separator ""
     opts.separator "Without revision arguments checks the current branch and all local ancestors."

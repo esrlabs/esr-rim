@@ -29,6 +29,10 @@ class CommandHelper < Processor
   def check_ready
     raise RimException.new("The workspace git contains uncommitted changes.") if !local_changes?(@ws_root)
   end
+  
+  def check_arguments
+    raise RimException.new("Unexpected command line arguments.") if !ARGV.empty?
+  end
 
   def get_relative_path(path)
     FileHelper.get_relative_path(path, @ws_root)

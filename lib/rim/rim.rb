@@ -50,7 +50,7 @@ prog_info = "rim, version #{RIM::Version::Version}, Copyright (c) 2015, esrlabs.
 global_options do |opts|
   opts.banner = prog_info
   opts.separator ""
-  opts.separator "Usage: rim <command> [options]"
+  opts.separator "Usage: [<options>] rim <command> [<args>]"
   opts.on("-v","--version", "Print version info") do
     logger.info prog_info
     exit

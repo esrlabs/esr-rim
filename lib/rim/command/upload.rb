@@ -10,13 +10,14 @@ class Upload < Command
   include RIM::Manifest
 
   def initialize(opts)
-    opts.banner = "Usage: rim upload <local_module_path>"
-    opts.description = "Upload rim modules according to manifest"
+    opts.banner = "usage: rim upload <local_module_path>"
+    opts.description = "Upload changes from rim module synchronized to <local_module_path> to remote repository."
   end
 
   def invoke()
     helper = UploadHelper.new(".", @logger)
-    helper.module_from_path(ARGV[0] || ".", :resolve_mode => :absolute)
+    helper.module_from_path(ARGV.shift || ".", :resolve_mode => :absolute)
+    helper.check_arguments
     helper.upload                
   end
 
