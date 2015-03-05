@@ -180,6 +180,8 @@ class GitSession
   def execute(cmd)
     raise "git command has to start with 'git'" unless cmd.start_with? "git "
     cmd.slice!("git ")
+    # remove any newlines as they will cause the command line to end prematurely
+    cmd.gsub!("\n", "")
     options = (@execute_dir.empty? ? "" : " -C #{@execute_dir}") \
         + (@work_dir.empty? ? "" : " --work-tree=#{File.expand_path(@work_dir)}") \
         + (@git_dir.empty? ? "" : " --git-dir=#{File.expand_path(@git_dir)}") 
