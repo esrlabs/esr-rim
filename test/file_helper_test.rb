@@ -6,9 +6,8 @@ require 'rim/file_helper'
 require 'fileutils'
 require 'test_helper'
 
-include FileUtils
-
 class FileHelperTest < Minitest::Test
+  include FileUtils
   include TestHelper
 
   def setup

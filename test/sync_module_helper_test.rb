@@ -9,12 +9,14 @@ require 'rim/sync_module_helper'
 require 'test_helper'
 require 'fileutils'
 
-include FileUtils
-
 class SyncModuleHelperTest < Minitest::Test
+  include FileUtils
   include TestHelper
 
   def setup
+    @logger = Logger.new($stdout)
+    @logger.level = Logger::ERROR unless ARGV.include? "debug"
+    RIM::GitSession.logger = @logger
     test_dir = empty_test_dir("module_sync_helper_test")
     @remote_git_dir = File.join(test_dir, "remote_git")
     FileUtils.mkdir(@remote_git_dir)
@@ -30,7 +32,6 @@ class SyncModuleHelperTest < Minitest::Test
     RIM::git_session(@ws_dir) do |s|
       s.execute("git clone #{@remote_git_dir} .")
     end
-    @logger = Logger.new($stdout)
   end
   
   def teardown

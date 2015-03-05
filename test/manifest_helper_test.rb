@@ -4,10 +4,10 @@ require "minitest/autorun"
 require "rim/manifest/helper"
 require "fileutils"
 
-include FileUtils
-include RIM::Manifest::Helpers
-
 class ManifestHelperTest < Minitest::Test
+  include FileUtils
+  include RIM::Manifest::Helpers
+
   def setup
   end
 
@@ -25,9 +25,5 @@ class ManifestHelperTest < Minitest::Test
       m = default_manifest
       assert m != nil
     end
-  end
-
-  def test_that_will_be_skipped
-    skip "test this later"
   end
 end

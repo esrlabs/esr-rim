@@ -11,9 +11,8 @@ require 'rim/upload_helper'
 require 'test_helper'
 require 'fileutils'
 
-include FileUtils
-
 class UploadHelperTest < Minitest::Test
+  include FileUtils
   include TestHelper
 
   def setup
@@ -22,6 +21,8 @@ class UploadHelperTest < Minitest::Test
     @ws_remote_dir = File.join(test_dir, "remote_ws")
     @ws_dir = File.join(test_dir, "ws")
     @logger = Logger.new($stdout)
+    @logger.level = Logger::ERROR unless ARGV.include? "debug"
+    RIM::GitSession.logger = @logger
   end
   
   def teardown
@@ -144,7 +145,7 @@ class UploadHelperTest < Minitest::Test
     end
   end
 
-  def test_files_of_ammended_commits_are_uploaded
+  def test_files_of_amended_commits_are_uploaded
     mod1_info = create_module_git("mod1")
     create_ws_git("testbr")
     sync_helper = RIM::SyncHelper.new(@ws_dir, @logger, [mod1_info])
@@ -211,7 +212,7 @@ private
       s.execute("git commit -m \"Initial commit\"")
       s.execute("git checkout --detach #{branch}")
     end
-    `git clone #{@ws_remote_dir} #{@ws_dir}`
+    `git clone #{@ws_remote_dir} #{@ws_dir} 2>&1`
   end
 
   def create_module_git(name, branch = "master", remote_branch_format = nil)

@@ -10,12 +10,14 @@ require 'rim/upload_module_helper'
 require 'test_helper'
 require 'fileutils'
 
-include FileUtils
-
 class UploadModuleHelperTest < Minitest::Test
+  include FileUtils
   include TestHelper
 
   def setup
+    @logger = Logger.new($stdout)
+    @logger.level = Logger::ERROR unless ARGV.include? "debug"
+    RIM::GitSession.logger = @logger
     test_dir = empty_test_dir("upload_module_helper_test")
     @remote_git_dir = File.join(test_dir, "remote_git")
     FileUtils.mkdir(@remote_git_dir)
@@ -39,7 +41,6 @@ class UploadModuleHelperTest < Minitest::Test
       s.execute("git commit -m \"Initial commit\"")
       @initial_ws_rev = s.rev_sha1("HEAD")
     end
-    @logger = Logger.new($stdout)
   end
   
   def teardown

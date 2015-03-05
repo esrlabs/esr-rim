@@ -15,7 +15,7 @@ include TestHelper
 
 def setup
   logger = Logger.new($stdout)
-  logger.level = Logger::ERROR
+  logger.level = Logger::ERROR unless ARGV.include? "debug"
   RIM::GitSession.logger = logger
 end
 
