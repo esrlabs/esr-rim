@@ -212,7 +212,10 @@ private
       s.execute("git commit -m \"Initial commit\"")
       s.execute("git checkout --detach #{branch}")
     end
-    `git clone #{@ws_remote_dir} #{@ws_dir} 2>&1`
+    FileUtils.mkdir_p(@ws_dir)
+    RIM::git_session(@ws_dir) do |s|
+      s.execute("git clone #{@ws_remote_dir} #{@ws_dir}")
+    end
   end
 
   def create_module_git(name, branch = "master", remote_branch_format = nil)

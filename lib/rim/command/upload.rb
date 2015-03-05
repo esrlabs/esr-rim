@@ -10,7 +10,7 @@ class Upload < Command
   include RIM::Manifest
 
   def initialize(opts)
-    opts.banner = "usage: rim upload <local_module_path>"
+    opts.banner = "Usage: rim upload <local_module_path>"
     opts.description = "Upload changes from rim module synchronized to <local_module_path> to remote repository."
   end
 

@@ -15,7 +15,9 @@ class Sync < Command
   def initialize(opts)
     opts.banner = "Usage: rim sync [<options>] [<local_module_path>]"
     opts.description = "Synchronize specified rim modules with remote repository revisions."
-    opts.on("-m", "--manifest [MANIFEST]", String, "Read information from manifest") do |manifest|
+    opts.separator ""
+    opts.on("-m", "--manifest [MANIFEST]", String, "Read information from manifest.", \
+                                                   "If no manifest file is specified a 'manifest.rim' file will be used.") do |manifest|
       @manifest = manifest ? manifest : Helpers::default_manifest
     end
     opts.on("-c", "--create", "Synchronize module initially to <local_module_path>.", \
@@ -23,10 +25,10 @@ class Sync < Command
       @create = true
     end
     @module_options = {}
-    opts.on("-r", "--remote-url=URL", String, "Set the remote URL of the module.", \
+    opts.on("-r", "--remote-url URL", String, "Set the remote URL of the module.", \
                                               "A relative path will be applied to ssh://gerrit/") do |url|
       @module_options[:remote_url] = url 
-    end
+    end 
     opts.on("-l", "--local", "If the remote URL is relative this option can be used to indicate", \
                              "that the URL is a local repository relative to working directory") do
       @module_options[:resolve_mode] = :local
