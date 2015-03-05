@@ -134,16 +134,18 @@ class GitSession
   end
 
   # export file contents of rev to dir
+  # if +path+ is given, checks out only this part of the filesystem tree
   # does not remove any files from dir which existed before
-  def export_rev(rev, dir)
-    execute "git archive --format tar #{rev} | tar -x -C #{dir}"
+  def export_rev(rev, dir, path=nil)
+    execute "git archive --format tar #{rev} #{path} | tar -x -C #{dir}"
   end
 
   # checks out rev to a temporary directory and yields this directory to the given block
+  # if +path+ is given, checks out only this part of the filesystem tree
   # returns the value returned by the block
-  def within_exported_rev(rev)
+  def within_exported_rev(rev, path=nil)
     Dir.mktmpdir("rim") do |d|
-      export_rev(rev, d)
+      export_rev(rev, d, path)
       # return contents of yielded block
       # mktmpdir returns value return by our block
       yield d

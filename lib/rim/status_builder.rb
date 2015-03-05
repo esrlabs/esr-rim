@@ -32,11 +32,19 @@ class StatusBuilder
 
   # status object for revision rev
   def rev_status(git_session, rev)
-    git_session.within_exported_rev(rev) do |d|
-      stat = fs_status(d)
-      stat.git_rev = git_session.rev_sha1(rev)
-      stat
+    out =git_session.execute("git ls-tree -r --name-only #{rev}")
+    mod_stats = []
+    out.split("\n").each do |l|
+      if File.basename(l) == RimInfo::InfoFileName
+        rel_path = File.dirname(l)
+        git_session.within_exported_rev(rev, rel_path) do |d|
+          mod_stats << build_module_status(d, d+"/"+rel_path)
+        end
+      end
     end
+    stat = RevStatus.new(mod_stats)
+    stat.git_rev = git_session.rev_sha1(rev)
+    stat
   end
 
   # status object for the current file system content of dir
