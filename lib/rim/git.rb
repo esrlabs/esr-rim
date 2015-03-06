@@ -17,8 +17,6 @@ end
 class GitSession
 
   attr_reader :execute_dir
-  attr_reader :work_tree
-  attr_reader :git_dir
 
   def initialize(logger, execute_dir, arg = {})
     @execute_dir = execute_dir

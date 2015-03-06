@@ -21,7 +21,7 @@ protected
   def fetch_module
     git_path = module_git_path(@remote_path)
     FileUtils.mkdir_p git_path
-    RIM::git_session("", {:git_dir => git_path, :work_dir => ""}) do |s|
+    RIM::git_session(git_path) do |s|
       if !File.exist?(git_path + "/config")
         s.execute("git clone --mirror #{@module_info.remote_url} #{git_path}")
       else
