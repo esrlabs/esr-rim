@@ -15,7 +15,7 @@ class Upload < Command
   end
 
   def invoke()
-    helper = UploadHelper.new(".", @logger)
+    helper = UploadHelper.new(project_git_dir, @logger)
     helper.module_from_path(ARGV.shift || ".", :resolve_mode => :absolute)
     helper.check_arguments
     helper.upload                
