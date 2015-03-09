@@ -49,7 +49,7 @@ private
       if local_branch
         push_branch = @module_info.remote_branch_format && !@module_info.remote_branch_format.empty? \
             ? @module_info.remote_branch_format % remote_branch : remote_branch
-        dest.execute("git push #{@module_info.remote_url} #{local_branch}:#{push_branch}")
+        dest.execute("git push #{@remote_url} #{local_branch}:#{push_branch}")
         dest.execute("git checkout --detach #{local_branch}")
         dest.execute("git branch -D #{local_branch}")
         @logger.info("Commited changes for module #{@module_info.local_path} to remote branch #{push_branch}.")

@@ -52,7 +52,7 @@ class CommandHelper < Processor
   end
 
   def create_module_info(remote_url, local_path, target_revision, ignores)
-    absolute_remote_url = get_absolute_remote_url(remote_url, resolve_mode)
+    absolute_remote_url = get_absolute_remote_url(remote_url)
     ModuleInfo.new(absolute_remote_url, get_relative_path(local_path), target_revision, ignores, get_remote_branch_format(absolute_remote_url))
   end
 

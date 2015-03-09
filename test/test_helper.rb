@@ -36,4 +36,8 @@ def remove_test_dirs
   @test_dirs = nil
 end
 
+def path_from_url(url)
+  return url.sub(/^file:/, "")
+end
+
 end

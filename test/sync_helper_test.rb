@@ -58,8 +58,9 @@ class SyncHelperTest < Minitest::Test
     RIM::git_session(@ws_dir) do |s|
       s.execute("git commit . -m \"Changed ws file\"")
     end
-    `echo ' changed' >> #{File.join(mod1_info.remote_url, "readme.txt")}`
-    RIM::git_session(mod1_info.remote_url) do |f|
+    remote_path = path_from_url(mod1_info.remote_url)
+    `echo ' changed' >> #{File.join(remote_path, "readme.txt")}`
+    RIM::git_session(path_from_url(remote_path)) do |f|
       f.execute("git commit . -m \"Changed mod1 file\"")
     end
     cut.sync
@@ -131,7 +132,7 @@ private
       s.execute("git add .")
       s.execute("git commit -m \"Initial commit\"")
     end
-    return RIM::ModuleInfo.new(git_dir, name, branch)
+    return RIM::ModuleInfo.new("file:" + git_dir, name, branch)
   end
 
   def check_not_dirty(session)

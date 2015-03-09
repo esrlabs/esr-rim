@@ -29,11 +29,11 @@ class Sync < Command
                                               "A relative path will be applied to ssh://gerrit/") do |url|
       @module_options[:remote_url] = url 
     end 
-    opts.on("-t", "--target-revision=REVISION", String, "Set the target revision of the module.") do |target_revision|
+    opts.on("-t", "--target-revision REVISION", String, "Set the target revision of the module.") do |target_revision|
       @module_options[:target_revision] = target_revision
     end
-    opts.on("-i", "--ignore=PATTERN_LIST", String, "Set the ignore patterns by specifying a comma separated list.") do |ignores|
-      @module_options[:ignores] = ignores
+    opts.on("-i", "--ignore [PATTERN_LIST]", String, "Set the ignore patterns by specifying a comma separated list.") do |ignores|
+      @module_options[:ignores] = ignores || ""
     end
   end
 
