@@ -20,9 +20,11 @@ class CommandHelperTest < Minitest::Test
 
   def test_get_absolute_remote_url
     cut = RIM::CommandHelper.new(".", nil)
-    assert "file:" + File.expand_path(".") == cut.get_absolute_remote_url("file://" + File.expand_path("."))    
-    assert "file:" + File.expand_path(".") == cut.get_absolute_remote_url("file:" + File.expand_path("."))    
-    assert "file:" + File.expand_path("command_helper_test", ".") == cut.get_absolute_remote_url("file:command_helper_test")
+    assert File.expand_path(".") == cut.get_absolute_remote_url("file://.")
+    assert File.expand_path("abcd", ".") == cut.get_absolute_remote_url("file://abcd")
+    assert File.expand_path("abc", ".") == cut.get_absolute_remote_url("file://./abc")        
+    assert "C:/abcdef" == cut.get_absolute_remote_url("file:///C|/abcdef")        
+    assert "/abcdef/defghi" == cut.get_absolute_remote_url("file:///abcdef/defghi")        
     assert "ssh://gerrit/abcde" == cut.get_absolute_remote_url("abcde")    
     assert "ssh://gerrit2/abcde" == cut.get_absolute_remote_url("ssh://gerrit2/abcde")    
   end

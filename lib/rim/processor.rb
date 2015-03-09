@@ -15,10 +15,6 @@ def initialize(workspace_root, logger)
   @logger = logger
 end
 
-def module_remote_url(remote_url)
-  remote_url.sub(/^file:/, '')
-end
-
 def module_git_path(remote_path)
   # remote url without protocol specifier
   # this way the local path should be unique
@@ -42,16 +38,15 @@ def remote_path(remote_url)
 end
 
 def create_tmp_git(mod)
-  remote_url = module_remote_url(mod.remote_url)
   git_path = module_git_path(mod)
   git_tmp_path = module_tmp_git_path(mod)
   FileUtils.mkdir_p git_tmp_path
 
   RIM::git_session(git_tmp_path) do |s|
     if !File.exist?(git_tmp_path + "/.git")
-      s.execute("git clone #{remote_url} #{git_tmp_path}")
+      s.execute("git clone #{@module_info.remote_url} #{git_tmp_path}")
     else
-      s.execute("git fetch #{remote_url}")
+      s.execute("git fetch #{@module_info.remote_url}")
     end
   end
 

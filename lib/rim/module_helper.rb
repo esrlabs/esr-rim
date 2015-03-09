@@ -11,7 +11,6 @@ class ModuleHelper < Processor
   def initialize(workspace_root, module_info, logger)
     super(workspace_root, logger)
     @module_info = module_info
-    @remote_url = module_remote_url(@module_info.remote_url)
     @remote_path = remote_path(@module_info.remote_url)
     @logger = logger
   end
@@ -25,8 +24,8 @@ protected
     FileUtils.mkdir_p git_path
     RIM::git_session(git_path) do |s|
       if !File.exist?(git_path + "/config")
-        s.execute("git clone --mirror #{@remote_url} #{git_path}") do |out, e|
-          raise RimException.new("Remote repository '#{@remote_url}' of module '#{@module_info.local_path}' not found.") if e
+        s.execute("git clone --mirror #{@module_info.remote_url} #{git_path}") do |out, e|
+          raise RimException.new("Remote repository '#{@module_info.remote_url}' of module '#{@module_info.local_path}' not found.") if e
         end
       else
         s.execute("git remote update")

@@ -39,15 +39,16 @@ class CommandHelper < Processor
   end
 
   def get_absolute_remote_url(remote_url)
-    remote_url = URI.parse(remote_url)
-    if remote_url.scheme == "file"
-      if remote_url.opaque
-        "file:" + File.expand_path(remote_url.opaque, @ws_root)
+    if remote_url.start_with?("file://")
+      remote_url = remote_url[7..-1]
+      match = remote_url.match(/^\/(\w)\|/)
+      if match
+        remote_url = "#{match[1]}:#{remote_url[match[0].size..-1]}"
       else
-        remote_url.to_s
-      end
+        File.expand_path(remote_url, @ws_dir)
+      end      
     else
-      URI.parse(GerritServer).merge(remote_url).to_s
+      URI.parse(GerritServer).merge(URI.parse(remote_url)).to_s
     end
   end
 
