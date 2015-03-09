@@ -1,4 +1,5 @@
 require 'rim/processor'
+require 'rim/rim_exception'
 require 'rim/rim_info'
 require 'rim/file_helper'
 require 'rim/dirty_check'
@@ -23,7 +24,9 @@ protected
     FileUtils.mkdir_p git_path
     RIM::git_session(git_path) do |s|
       if !File.exist?(git_path + "/config")
-        s.execute("git clone --mirror #{@module_info.remote_url} #{git_path}")
+        s.execute("git clone --mirror #{@module_info.remote_url} #{git_path}") do |out, e|
+          raise RimException.new("Remote repository '#{@module_info.remote_url}' of module '#{@module_info.local_path}' not found.") if e
+        end
       else
         s.execute("git remote update")
       end

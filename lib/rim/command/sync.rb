@@ -29,10 +29,6 @@ class Sync < Command
                                               "A relative path will be applied to ssh://gerrit/") do |url|
       @module_options[:remote_url] = url 
     end 
-    opts.on("-l", "--local", "If the remote URL is relative this option can be used to indicate", \
-                             "that the URL is a local repository relative to working directory") do
-      @module_options[:resolve_mode] = :local
-    end
     opts.on("-t", "--target-revision=REVISION", String, "Set the target revision of the module.") do |target_revision|
       @module_options[:target_revision] = target_revision
     end
@@ -52,7 +48,7 @@ class Sync < Command
       elsif !@module_options[:remote_url] || !@module_options[:target_revision]
         raise RimException.new("Please specify remote URL and target revision for the new module.")
       else
-        helper.add_module_info(helper.create_module_info(@module_options[:remote_url], @module_options[:local], local_path, @module_options[:target_revision], \
+        helper.add_module_info(helper.create_module_info(@module_options[:remote_url], local_path, @module_options[:target_revision], \
             @module_options[:ignores]))
       end 
     else

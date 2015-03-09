@@ -38,7 +38,20 @@ class CommandHelper < Processor
     FileHelper.get_relative_path(path, @ws_root)
   end
 
-  def create_module_info(remote_url, resolve_mode, local_path, target_revision, ignores)
+  def get_absolute_remote_url(remote_url)
+    remote_url = URI.parse(remote_url)
+    if remote_url.scheme == "file"
+      if remote_url.opaque
+        "file:" + File.expand_path(remote_url.opaque, @ws_root)
+      else
+        remote_url.to_s
+      end
+    else
+      URI.parse(GerritServer).merge(remote_url).to_s
+    end
+  end
+
+  def create_module_info(remote_url, local_path, target_revision, ignores)
     absolute_remote_url = get_absolute_remote_url(remote_url, resolve_mode)
     ModuleInfo.new(absolute_remote_url, get_relative_path(local_path), target_revision, ignores, get_remote_branch_format(absolute_remote_url))
   end
@@ -46,7 +59,7 @@ class CommandHelper < Processor
   def modules_from_manifest(path)
     manifest = read_manifest(path)
     manifest.modules.each do |mod|
-      add_module_info(create_module_info(mod.remote_path, !manifest.remote_url, mod.local_path, mod.target_revision, mod.ignores))
+      add_module_info(create_module_info(mod.remote_path, mod.local_path, mod.target_revision, mod.ignores))
     end
     true
   end
@@ -56,7 +69,6 @@ class CommandHelper < Processor
     if File.file?(File.join(path, RimInfo::InfoFileName))
       rim_info = RimInfo.from_dir(path)
       add_module_info(create_module_info(opts.has_key?(:remote_url) ? opts[:remote_url] : rim_info.remote_url, \
-          opts.has_key?(:resolve_mode) ? opts[:resolve_mode] : nil, path, \
           opts.has_key?(:target_revision) ? opts[:target_revision] : rim_info.upstream, \
           opts.has_key?(:ignores) ? opts[:ignores] : rim_info.ignores))
     else
@@ -76,22 +88,6 @@ class CommandHelper < Processor
   end
 
   def add_module_info(module_info)
-  end
-
-private
-
-  def get_absolute_remote_url(remote_url, mode)
-    if mode == :absolute
-      remote_url
-    else
-      base = mode == :local ? File.expand_path(".") : GerritServer
-      base_url = URI.parse(base)
-      if base_url.relative?
-        File.expand_path(remote_url, base)
-      else
-        base_url.merge(remote_url).to_s
-      end
-    end
   end
 
   def get_remote_branch_format(remote_url)
