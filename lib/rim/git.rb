@@ -188,6 +188,9 @@ class GitSession
     cmd = "git#{options} #{cmd} 2>&1"
 
     out = `#{cmd}`
+    # make sure we don't run into any encoding misinterpretation issues
+    out.force_encoding("binary")
+
     exitstatus = $?.exitstatus
 
     invid = self.class.next_invocation_id.to_s.ljust(4)
