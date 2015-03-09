@@ -25,7 +25,7 @@ def test_write
   # some whitebox testing here
   ri_file = d+"/.riminfo"
   assert File.exist?(ri_file)
-  assert File.read(ri_file) =~ /remote_url:\s+ssh:\/\/gerrit/
+  assert File.read(ri_file) =~ /remote_url\s+:\s+ssh:\/\/gerrit/
 end
 
 def test_read
@@ -53,8 +53,8 @@ end
 def test_attributes
   attrs = {
     :remote_url => "ssh://somehost/dir1/dir2",
-    :revision => "8347982374198379842984562095637243593092",
-    :upstream => "trunk",
+    :revision_sha1 => "8347982374198379842984562095637243593092",
+    :target_revision => "trunk",
     :ignores => "CMakeLists.txt,*.arxml"
   }
   d = empty_test_dir("rim_info")

@@ -26,9 +26,8 @@ class RimInfo
   
   AttrsDef = [
     :remote_url,
-    :revision,
-    :rev_name,
-    :upstream,
+    :revision_sha1,
+    :target_revision,
     :ignores,
     :checksum
   ]

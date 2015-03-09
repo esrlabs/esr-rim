@@ -311,7 +311,7 @@ end
 def setup_clean_test_module(dir)
   create_rim_info(dir, {
     :remote_url => "ssh://gerrit-test/#{File.basename(dir)}",
-    :revision => "12345"
+    :revision_sha1 => "12345"
   })
   write_file "#{dir}/file1", "some content"
   write_file "#{dir}/dir1/file2", "some other content"

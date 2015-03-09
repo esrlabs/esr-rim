@@ -26,6 +26,7 @@ private
     RIM::git_session(tmp_git_path) do |dest|
       local_branch = nil
       remote_branch = nil
+      infos = nil
       RIM::git_session(@ws_root) do |src|
         infos = get_branches_and_revision_infos(src, dest, parent_sha1, sha1s)
         if infos.branches.size == 1
@@ -39,20 +40,20 @@ private
           else
             raise RimException.new("Module #{@module_info.local_path} is not based on branch. No push can be performed.")
           end
-        elsif infos.branches.size == 0
-          @logger.info("No changes to commit for module #{@module_info.local_path}.")
-        else
+        elsif infos.branches.size > 1
           raise RimException.new("There are commits for module #{@module_info.local_path} on multiple target revisions (#{infos.branches.join(", ")}).")
         end
       end
       # Finally we're done. Push the changes
-      if local_branch
+      if local_branch && dest.rev_sha1(local_branch) != infos.parent_sha1  
         push_branch = @module_info.remote_branch_format && !@module_info.remote_branch_format.empty? \
             ? @module_info.remote_branch_format % remote_branch : remote_branch
         dest.execute("git push #{@remote_url} #{local_branch}:#{push_branch}")
         dest.execute("git checkout --detach #{local_branch}")
         dest.execute("git branch -D #{local_branch}")
         @logger.info("Commited changes for module #{@module_info.local_path} to remote branch #{push_branch}.")
+      else
+        @logger.info("No changes to module #{@module_info.local_path}.")
       end                              
     end
   end
@@ -64,16 +65,16 @@ private
     dest_parent_sha1 = nil
     (sha1s.size() - 1).step(0, -1) do |i|
       info = get_revision_info(src_session, dest_session, sha1s[i])
-      if !info.dest_sha1 && info.rim_info.upstream
+      if !info.dest_sha1 && info.rim_info.target_revision
         infos.unshift(info)
-        branches.push(info.rim_info.upstream) if !branches.include?(info.rim_info.upstream)
+        branches.push(info.rim_info.target_revision) if !branches.include?(info.rim_info.target_revision)
       else
         dest_parent_sha1 = info.dest_sha1
         break
       end
     end
-    dest_parent_sha1 = get_riminfo_for_revision(src_session, parent_sha1).revision if !dest_parent_sha1
-    dest_parent_sha1 = infos.first.rim_info.revision if !dest_parent_sha1 && !infos.empty?
+    dest_parent_sha1 = get_riminfo_for_revision(src_session, parent_sha1).revision_sha1 if !dest_parent_sha1
+    dest_parent_sha1 = infos.first.rim_info.revision_sha1 if !dest_parent_sha1 && !infos.empty?
     return Struct.new(:branches, :parent_sha1, :rev_infos).new(branches, dest_parent_sha1, infos)      
   end
   

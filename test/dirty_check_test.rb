@@ -28,7 +28,7 @@ def test_mark_clean
   d = empty_test_dir("dirty_check")
   create_rim_info(d, {
     :remote_url => "ssh://gerrit",
-    :revision => "4711"
+    :revision_sha1 => "4711"
   })
   write_file("#{d}/somefile", "some content")
   RIM::DirtyCheck.mark_clean(d)
@@ -120,7 +120,7 @@ def test_dirty_change_info
   d = empty_test_dir("dirty_check")
   setup_clean_test_module(d)
   ri = RIM::RimInfo.from_dir(d)
-  ri.revision = "999"
+  ri.revision_sha1 = "999"
   ri.to_dir(d)
   assert RIM::DirtyCheck.dirty?(d)
 end
@@ -129,10 +129,10 @@ def test_dirty_change_info_and_repair
   d = empty_test_dir("dirty_check")
   setup_clean_test_module(d)
   ri = RIM::RimInfo.from_dir(d)
-  ri.revision = "999"
+  ri.revision_sha1 = "999"
   ri.to_dir(d)
   assert RIM::DirtyCheck.dirty?(d)
-  ri.revision = "4711"
+  ri.revision_sha1 = "4711"
   ri.to_dir(d)
   assert !RIM::DirtyCheck.dirty?(d)
 end
@@ -166,7 +166,7 @@ def setup_clean_test_module(dir)
   create_rim_info(dir, {
     :remote_url => "ssh://gerrit",
     :ignores => "ign_file1,ign_file2,*.ign,**/*.ign2",
-    :revision => "4711"
+    :revision_sha1 => "4711"
   })
   write_file("#{dir}/file1", "some content")
   write_file("#{dir}/ign_file1", "ignored stuff")

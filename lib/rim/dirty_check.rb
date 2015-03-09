@@ -30,7 +30,7 @@ class DirtyCheck
   # checksum calculation fails if those attributes are not present 
   ChecksumAttributes = [
     :remote_url,
-    :revision
+    :revision_sha1
   ]
 
   # rim info must exist in dir and must be valid

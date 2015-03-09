@@ -52,8 +52,8 @@ class UploadModuleHelperTest < Minitest::Test
     FileUtils.mkdir_p(mod_dir)
     write_file(mod_dir, "readme.txt")
     rim_info = RIM::RimInfo.new
-    rim_info.revision = @initial_rev
-    rim_info.upstream = "testbr"
+    rim_info.revision_sha1 = @initial_rev
+    rim_info.target_revision = "testbr"
     rim_info.to_dir(mod_dir)
     revs = []
     RIM::git_session(@ws_dir) do |s|
