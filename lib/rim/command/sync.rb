@@ -25,11 +25,11 @@ class Sync < Command
       @create = true
     end
     @module_options = {}
-    opts.on("-r", "--remote-url URL", String, "Set the remote URL of the module.", \
+    opts.on("-u", "--remote-url URL", String, "Set the remote URL of the module.", \
                                               "A relative path will be applied to ssh://gerrit/") do |url|
       @module_options[:remote_url] = url 
     end 
-    opts.on("-t", "--target-revision REVISION", String, "Set the target revision of the module.") do |target_revision|
+    opts.on("-r", "--target-revision REVISION", String, "Set the target revision of the module.") do |target_revision|
       @module_options[:target_revision] = target_revision
     end
     opts.on("-i", "--ignore [PATTERN_LIST]", String, "Set the ignore patterns by specifying a comma separated list.") do |ignores|
