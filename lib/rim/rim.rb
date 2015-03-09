@@ -67,15 +67,21 @@ ObjectSpace.each_object(Class).select{|clazz| clazz < RIM::Command::Command }.ea
   end
 end
 ARGV.unshift("help") if ARGV.empty?
-cmdname = opt_parse()
-if cmdname
-  cmd = commands[cmdname]
-  cmd.logger = logger
-  begin
-    cmd.invoke()
-  rescue RIM::RimException => e
-    e.messages.each do |m|
-      logger.error(m)
+begin
+  cmdname = opt_parse()
+  if cmdname
+    cmd = commands[cmdname]
+    cmd.logger = logger
+    begin
+      cmd.invoke()
+    rescue RIM::RimException => e
+      e.messages.each do |m|
+        logger.error(m)
+      end
+      exit(1)
     end
   end
+rescue OptionParser::InvalidOption => e
+  logger.error(e.message)  
+  exit(1)
 end
