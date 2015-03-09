@@ -132,7 +132,7 @@ private
       s.execute("git add .")
       s.execute("git commit -m \"Initial commit\"")
     end
-    return RIM::ModuleInfo.new(git_dir, name, branch)
+    return RIM::ModuleInfo.new("file://" + git_dir, name, branch)
   end
 
   def check_not_dirty(session)

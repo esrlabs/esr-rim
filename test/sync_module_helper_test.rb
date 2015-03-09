@@ -18,12 +18,13 @@ class SyncModuleHelperTest < Minitest::Test
     @logger.level = Logger::ERROR unless ARGV.include? "debug"
     RIM::GitSession.logger = @logger
     test_dir = empty_test_dir("module_sync_helper_test")
-    @remote_git_dir = File.join(test_dir, "remote_git")
-    FileUtils.mkdir(@remote_git_dir)
-    RIM::git_session(@remote_git_dir) do |s|
+    remote_git_dir = File.join(test_dir, "remote_git")
+    @remote_git_dir = "file://" + remote_git_dir
+    FileUtils.mkdir(remote_git_dir)
+    RIM::git_session(remote_git_dir) do |s|
       s.execute("git init")
       s.execute("git checkout -B testbr")
-      write_file(@remote_git_dir, "readme.txt")
+      write_file(remote_git_dir, "readme.txt")
       s.execute("git add .")
       s.execute("git commit -m \"Initial commit\"")
     end

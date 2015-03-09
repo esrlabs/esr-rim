@@ -52,7 +52,6 @@ class Sync < Command
             @module_options[:ignores]))
       end 
     else
-      @module_options[:resolve_mode] = :absolute if !@module_options[:remote_url]
       helper.module_from_path(ARGV.shift || ".", @module_options)
     end
     helper.check_arguments

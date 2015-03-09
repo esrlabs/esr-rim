@@ -32,7 +32,7 @@ class UploadHelperTest < Minitest::Test
   def test_no_files_are_uploaded_if_not_dirty
     mod1_info = create_module_git("mod1")
     sha1 = nil
-    RIM::git_session(mod1_info.remote_url) do |s|
+    module_session(mod1_info) do |s|
       sha1 = s.rev_sha1("HEAD")  
     end 
     mod2_info = create_module_git("mod2")
@@ -44,7 +44,7 @@ class UploadHelperTest < Minitest::Test
     end
     cut = RIM::UploadHelper.new(@ws_dir, @logger, [mod1_info, mod2_info])
     cut.upload
-    RIM::git_session(mod1_info.remote_url) do |s|
+    module_session(mod1_info) do |s|
       assert s.rev_sha1("master") == sha1
     end
   end
@@ -70,7 +70,7 @@ class UploadHelperTest < Minitest::Test
     end
     cut = RIM::UploadHelper.new(@ws_dir, @logger, [mod1_info])
     cut.upload
-    RIM::git_session(mod1_info.remote_url) do |s|
+    module_session(mod1_info) do |s|
       s.execute("git checkout master")
       assert File.exist?(File.join(@remote_git_dir, "mod1/readme.txt"))
       assert File.exist?(File.join(@remote_git_dir, "mod1/new_file.txt"))
@@ -100,7 +100,7 @@ class UploadHelperTest < Minitest::Test
     end
     cut = RIM::UploadHelper.new(@ws_dir, @logger, [mod1_info])
     cut.upload
-    RIM::git_session(mod1_info.remote_url) do |s|
+    module_session(mod1_info) do |s|
       s.execute("git checkout for/master")
       assert File.exist?(File.join(@remote_git_dir, "mod1/readme.txt"))
       assert File.exist?(File.join(@remote_git_dir, "mod1/new_file.txt"))
@@ -135,7 +135,7 @@ class UploadHelperTest < Minitest::Test
     end
     cut = RIM::UploadHelper.new(@ws_dir, @logger, [mod1_info])
     cut.upload
-    RIM::git_session(mod1_info.remote_url) do |s|
+    module_session(mod1_info) do |s|
       s.execute("git checkout master")
       assert File.exist?(File.join(@remote_git_dir, "mod1/readme.txt"))
       assert !File.exist?(File.join(@remote_git_dir, "mod1/new_file.txt"))
@@ -167,7 +167,7 @@ class UploadHelperTest < Minitest::Test
     end
     cut = RIM::UploadHelper.new(@ws_dir, @logger, [mod1_info])
     cut.upload
-    RIM::git_session(mod1_info.remote_url) do |s|
+    module_session(mod1_info) do |s|
       s.execute("git checkout master")
       assert File.exist?(File.join(@remote_git_dir, "mod1/readme.txt"))
       assert File.exist?(File.join(@remote_git_dir, "mod1/new_file.txt"))
@@ -185,7 +185,7 @@ class UploadHelperTest < Minitest::Test
       s.execute("git commit . -m \"Third change\"")      
     end
     cut.upload
-    RIM::git_session(mod1_info.remote_url) do |s|
+    module_session(mod1_info) do |s|
       s.execute("git checkout master")
       assert File.exist?(File.join(@remote_git_dir, "mod1/readme.txt"))
       assert File.exist?(File.join(@remote_git_dir, "mod1/test_file.txt"))
@@ -231,7 +231,13 @@ private
       s.execute("git commit -m \"Initial commit\"")
       s.execute("git checkout --detach #{branch}")
     end
-    return RIM::ModuleInfo.new(git_dir, name, branch, nil, remote_branch_format)
+    return RIM::ModuleInfo.new("file://" + git_dir, name, branch, nil, remote_branch_format)
+  end
+
+  def module_session(module_info)
+    RIM::git_session(module_info.remote_url.gsub(/^file:\/\//, "")) do |s|
+      yield s
+    end    
   end
 
   def check_not_dirty(session)

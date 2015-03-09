@@ -3,12 +3,15 @@ require 'pathname'
 require 'rim/git'
 require 'rim/rim_exception'
 require 'rake'
+require 'pathname'
+require 'uri'
 
 module RIM
 
 class Processor
 
 MaxThreads = 10
+GerritServer = "ssh://gerrit/"
 
 def initialize(workspace_root, logger)
   @ws_root = workspace_root
@@ -37,20 +40,24 @@ def remote_path(remote_url)
     gsub(/\.\.[\\\/]/,'')
 end
 
-def create_tmp_git(mod)
-  git_path = module_git_path(mod)
-  git_tmp_path = module_tmp_git_path(mod)
-  FileUtils.mkdir_p git_tmp_path
+def get_relative_path(path)
+  FileHelper.get_relative_path(path, @ws_root)
+end
 
-  RIM::git_session(git_tmp_path) do |s|
-    if !File.exist?(git_tmp_path + "/.git")
-      s.execute("git clone #{@module_info.remote_url} #{git_tmp_path}")
+def get_absolute_remote_url(remote_url)
+  if remote_url.start_with?("file:")
+    remote_url = remote_url.gsub(/^file:(\/\/)?/, "")
+    match = remote_url.match(/^\/(\w)\|/)
+    if match
+      remote_url = "#{match[1]}:#{remote_url[match[0].size..-1]}"
+    elsif !remote_url.start_with?(File::SEPARATOR)
+      File.expand_path(remote_url, @ws_root)
     else
-      s.execute("git fetch #{@module_info.remote_url}")
+      remote_url
     end
+  else
+    URI.parse(GerritServer).merge(URI.parse(remote_url)).to_s
   end
-
-  git_tmp_path
 end
 
 def local_changes?(ws_dir, dir=ws_dir)

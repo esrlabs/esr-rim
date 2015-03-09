@@ -2,11 +2,11 @@ $:.unshift File.join(File.dirname(__FILE__),"..","lib")
 $:.unshift File.join(File.dirname(__FILE__))
 
 require 'minitest/autorun'
-require 'rim/command_helper'
+require 'rim/processor'
 require 'test_helper'
 require 'fileutils'
 
-class CommandHelperTest < Minitest::Test
+class ProcessorTest < Minitest::Test
   include FileUtils
   include TestHelper
 
@@ -19,7 +19,7 @@ class CommandHelperTest < Minitest::Test
   end
 
   def test_get_absolute_remote_url
-    cut = RIM::CommandHelper.new(".", nil)
+    cut = RIM::Processor.new(".", nil)
     assert File.expand_path(".") == cut.get_absolute_remote_url("file://.")
     assert File.expand_path("abcd", ".") == cut.get_absolute_remote_url("file://abcd")
     assert File.expand_path("abc", ".") == cut.get_absolute_remote_url("file://./abc")        
