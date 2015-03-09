@@ -11,6 +11,7 @@ class Command
   def project_git_dir
     git_dir = find_git_dir(".")
     raise RimException.new("The current path is not part of a git repository.") if !git_dir
+    git_dir
   end
 
   private

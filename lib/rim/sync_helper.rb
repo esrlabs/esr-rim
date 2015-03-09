@@ -23,7 +23,11 @@ class SyncHelper < CommandHelper
       branch = s.current_branch
       rim_branch = "rim/" + branch
       branch_sha1 = s.has_branch?(rim_branch) ? s.rev_sha1(rim_branch) : ""
-      if !branch.start_with?("rim/")
+      if branch.empty?
+        raise RimException.new("Not on a git branch.")
+      elsif branch.start_with?("rim/")
+        raise RimException.new("The current git branch '#{branch}' is a rim integration branch. Please switch to a non rim branch to proceed.")
+      else
         begin
           remote_rev = get_last_remote_revision(s, branch)
           rev = remote_rev ? remote_rev : branch
@@ -32,8 +36,6 @@ class SyncHelper < CommandHelper
         ensure
           s.execute("git checkout #{branch}")
         end
-      else
-        raise RimException.new("The current git branch '#{branch}' is a rim integration branch. Please switch to a non rim branch to proceed.")
       end
       if s.rev_sha1(rim_branch) != branch_sha1
         @logger.info("Changes have been commited to branch #{rim_branch}. Rebase to apply changes to workspace.")
