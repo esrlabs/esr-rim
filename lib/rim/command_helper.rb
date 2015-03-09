@@ -44,9 +44,11 @@ class CommandHelper < Processor
       match = remote_url.match(/^\/(\w)\|/)
       if match
         remote_url = "#{match[1]}:#{remote_url[match[0].size..-1]}"
-      else
+      elsif !remote_url.start_with?(File::PATH_SEPARATOR)
         File.expand_path(remote_url, @ws_dir)
-      end      
+      else
+        remote_url
+      end
     else
       URI.parse(GerritServer).merge(URI.parse(remote_url)).to_s
     end
@@ -70,7 +72,7 @@ class CommandHelper < Processor
     if File.file?(File.join(path, RimInfo::InfoFileName))
       rim_info = RimInfo.from_dir(path)
       add_module_info(create_module_info(opts.has_key?(:remote_url) ? opts[:remote_url] : rim_info.remote_url, \
-          opts.has_key?(:target_revision) ? opts[:target_revision] : rim_info.upstream, \
+          path, opts.has_key?(:target_revision) ? opts[:target_revision] : rim_info.upstream, \
           opts.has_key?(:ignores) ? opts[:ignores] : rim_info.ignores))
     else
       raise RimException.new("No module info found in '#{path}'.") 
