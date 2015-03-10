@@ -6,10 +6,11 @@ module Command
 class Status < Command
 
   def initialize(opts)
-    opts.banner = "Usage: rim status [<options>] [<from-rev>..<to-rev>]"
+    opts.banner = "Usage: rim status [<options>] [<to-rev>|<from-rev>..<to-rev>]"
     opts.description = "Prints commits and their RIM status"
     opts.separator ""
     opts.separator "Without revision arguments checks the current branch and all local ancestors."
+    opts.separator "With a single <to-rev> checks that revision and all local ancestors."
     opts.separator "Otherwise checks <to-rev> and ancestors without <from-rev> and ancestors."
     opts.separator ""
     opts.on("-d", "--detailed", "print detailed status") do
@@ -22,12 +23,16 @@ class Status < Command
 
   def invoke()
     root = project_git_dir
-    rev_range = ARGV.shift
+    rev_arg = ARGV.shift
     stat = nil
     RIM.git_session(root) do |gs|
       sb = RIM::StatusBuilder.new
-      if rev_range
-        from_rev, to_rev = rev_range.split("..")
+      if rev_arg
+        if rev_arg =~ /\.\./
+          from_rev, to_rev = rev_arg.split("..")
+        else
+          from_rev, to_rev = nil, rev_arg
+        end
         stat = sb.rev_history_status(gs, to_rev, :stop_rev => from_rev)
         print_status(gs, stat)
       else
