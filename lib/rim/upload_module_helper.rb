@@ -139,9 +139,12 @@ private
       # have source files now. Now clear destination folder and copy
       prepare_empty_folder(dest_dir, ".git/**/*")
       files.each do |f|
-        path = File.join(dest_dir, f)
-        FileUtils.mkdir_p(File.dirname(path))
-        FileUtils.cp(File.join(tmp_module_dir, f), path)        
+        src_path = File.join(tmp_module_dir, f)
+        if File.file?(src_path)
+          path = File.join(dest_dir, f)
+          FileUtils.mkdir_p(File.dirname(path))
+          FileUtils.cp(src_path, path)
+        end        
       end
     end 
   end 
