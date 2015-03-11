@@ -99,6 +99,22 @@ class FileHelperTest < Minitest::Test
     assert files[0] = "a"
     assert files[1] = "f1"
     assert files[2] = "f1/ab"
+    assert !files[3]
+  end
+
+  def test_remove_empty_dirs_with_avoid
+    create_test_file(".", "a")
+    create_test_file("f1", "ab")
+    create_test_file("f1/f1")
+    create_test_file("f1/f1/f1")
+    create_test_file("f1/f1/f2")
+    RIM::FileHelper.remove_empty_dirs(@test_dir, File.join(@test_dir, "f1/f1"))
+    files = RIM::FileHelper.find_matching_files(@test_dir, false)
+    assert files[0] = "a"
+    assert files[1] = "f1"
+    assert files[2] = "f1/ab"
+    assert files[2] = "f1/f1"
+    assert !files[4]
   end
     
 private
