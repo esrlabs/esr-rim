@@ -2,6 +2,7 @@ require 'rim/module_helper'
 require 'rim/rim_info'
 require 'rim/file_helper'
 require 'rim/dirty_check'
+require 'rim/status_builder'
 require 'tempfile'
 
 module RIM
@@ -83,9 +84,11 @@ private
 
   # collect infos for a revision
   def get_revision_info(src_session, dest_session, src_sha1)
+    module_status = StatusBuilder.new.rev_module_status(src_session, src_sha1, @module_info.local_path)
+    rim_info = get_riminfo_for_revision(src_session, src_sha1)
     dest_sha1 = dest_session.rev_sha1("rim-#{src_sha1}")
     msg = src_session.execute("git show -s --format=%B #{src_sha1}") 
-    RevisionInfo.new(dest_sha1, src_sha1, get_riminfo_for_revision(src_session, src_sha1), msg)
+    RevisionInfo.new(module_status && module_status.dirty? ? dest_sha1 : rim_info.revision_sha1, src_sha1, rim_info, msg)
   end
   
   # clone or fetch repository

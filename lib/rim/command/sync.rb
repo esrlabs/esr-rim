@@ -43,7 +43,7 @@ class Sync < Command
       helper.modules_from_manifest(@manifest)
     elsif @create
       local_path = ARGV.shift || "."
-      if RimInfo.exists?(File.join(FileHelper.get_absolute_path(local_path)))
+      if helper.find_file_dir_in_workspace(local_path, RimInfo::InfoFileName)
         raise RimException.new("There's already a module file. Don't use the create option to sync the module.")
       elsif !@module_options[:remote_url] || !@module_options[:target_revision]
         raise RimException.new("Please specify remote URL and target revision for the new module.")

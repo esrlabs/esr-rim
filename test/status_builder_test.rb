@@ -84,6 +84,23 @@ def test_rev_status
   end
 end
 
+def test_rev_module_status
+  d = empty_test_dir("rim_info")
+
+  RIM.git_session(d) do |s|
+    test_git_setup(s, d)
+
+    ms = RIM::StatusBuilder.new.rev_module_status(s, "mod1~1", "mod1")
+    assert !ms
+
+    ms = RIM::StatusBuilder.new.rev_module_status(s, "mod1", "mod1")
+    assert ms
+    assert !ms.dirty?
+    assert_equal "ssh://gerrit-test/mod1", ms.rim_info.remote_url
+  end
+
+end
+
 def test_rev_history_status
   d = empty_test_dir("rim_info")
 

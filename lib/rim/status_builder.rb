@@ -47,6 +47,17 @@ class StatusBuilder
     stat
   end
 
+  # status object for module revision rev
+  def rev_module_status(git_session, rev, local_path)
+    mod_stat = nil
+    if git_session.execute("git ls-tree -r --name-only #{rev}").split("\n").include?(File.join(local_path, ".riminfo"))
+      git_session.within_exported_rev(rev, local_path) do |d|
+        mod_stat = build_module_status(d, File.join(d, local_path))
+      end
+    end
+    mod_stat
+  end
+
   # status object for the current file system content of dir
   # this can by any directory even outside of any git working copy
   def fs_status(dir)

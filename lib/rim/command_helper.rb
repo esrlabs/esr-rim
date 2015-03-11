@@ -43,8 +43,8 @@ class CommandHelper < Processor
   end
   
   def module_from_path(path, opts = {})
-    path = File.expand_path(path)
-    if File.file?(File.join(path, RimInfo::InfoFileName))
+    path = find_file_dir_in_workspace(path, RimInfo::InfoFileName)
+    if path
       rim_info = RimInfo.from_dir(path)
       add_module_info(create_module_info(opts.has_key?(:remote_url) ? opts[:remote_url] : rim_info.remote_url, \
           path, opts.has_key?(:target_revision) ? opts[:target_revision] : rim_info.target_revision, \
@@ -71,6 +71,23 @@ class CommandHelper < Processor
   def get_remote_branch_format(remote_url)
     #get_absolute_remote_url(remote_url).start_with?(GerritServer) ? "refs/for/%s" : nil
     "refs/for/%s"
+  end
+
+  def find_file_dir_in_workspace(start_dir, file)
+    path = File.expand_path(start_dir)
+    while path != @ws_root
+      if File.exist?(File.join(path, file))
+        return path
+      else
+        parent = File.dirname(path)
+        if parent != path
+          path = parent
+        else
+          break
+        end
+      end 
+    end
+    nil
   end
 
 end
