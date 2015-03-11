@@ -22,7 +22,7 @@ class SyncHelper < CommandHelper
     RIM::git_session(@ws_root) do |s|
       branch = s.current_branch
       rim_branch = "rim/" + branch
-      branch_sha1 = s.has_branch?(rim_branch) ? s.rev_sha1(rim_branch) : ""
+      branch_sha1 = s.rev_sha1(rim_branch)
       if branch.empty?
         raise RimException.new("Not on a git branch.")
       elsif branch.start_with?("rim/")

@@ -35,9 +35,7 @@ module RIM
     def export_module
       git_path = module_git_path(@remote_path)
       RIM::git_session(git_path) do |s|
-        begin
-          s.rev_sha1(@module_info.target_revision)
-        rescue GitException
+        if !s.rev_sha1(@module_info.target_revision)
           raise RimException.new("Unknown target revision '#{@module_info.target_revision}' for module '#{@module_info.local_path}'.")
         end
         local_path = File.join(@ws_root, @module_info.local_path)

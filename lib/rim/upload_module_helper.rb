@@ -82,9 +82,9 @@ private
 
   # collect infos for a revision
   def get_revision_info(src_session, dest_session, src_sha1)
-    dest_sha1 = dest_session.execute("git tag --list rim-#{src_sha1}")
+    dest_sha1 = dest_session.rev_sha1("rim-#{src_sha1}")
     msg = src_session.execute("git show -s --format=%B #{src_sha1}") 
-    RevisionInfo.new(dest_sha1.empty? ? nil : dest_sha1, src_sha1, get_riminfo_for_revision(src_session, src_sha1), msg)
+    RevisionInfo.new(dest_sha1, src_sha1, get_riminfo_for_revision(src_session, src_sha1), msg)
   end
   
   # clone or fetch repository

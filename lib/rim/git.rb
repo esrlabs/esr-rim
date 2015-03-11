@@ -109,10 +109,13 @@ class GitSession
 
   # returns the SHA-1 representation of rev
   def rev_sha1(rev)
-    out = execute "git rev-list -n 1 #{rev} --"
-    out.strip
+    sha1 = nil
+    execute "git rev-list -n 1 #{rev} --" do |out, e|
+      sha1 = out.strip if !e
+    end
+    sha1
   end
-
+  
   # returns the SHA-1 representations of the heads of all remote branches
   def remote_branch_revs
     out = execute "git show-ref"
