@@ -2,6 +2,7 @@ require 'rim/module_helper'
 require 'rim/rim_info'
 require 'rim/file_helper'
 require 'rim/dirty_check'
+require 'tempfile'
 
 module RIM
 
@@ -106,7 +107,14 @@ private
     if session.status.lines.any?
       # add before commit because the path can be below a not yet added path
       session.execute("git add --all")
-      session.execute("git commit -m \"#{msg}\"")
+      msg_file = Tempfile.new('message')
+      begin
+        msg_file << msg
+        msg_file.close
+        session.execute("git commit -F #{msg_file.path}")
+      ensure
+        msg_file.close(true)
+      end
       # create tag
       session.execute("git tag rim-#{sha1} refs/heads/#{branch}")
     end
