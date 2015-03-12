@@ -40,7 +40,7 @@ private
               commit_changes(dest, local_branch, rev_info.src_sha1, rev_info.message)
             end
           else
-            raise RimException.new("Module #{@module_info.local_path} is not based on branch. No push can be performed.")
+            raise RimException.new("The target revision '#{@module_info.target_revision}' of module #{@module_info.local_path} is not a branch. No push can be performed.")
           end
         elsif infos.branches.size > 1
           raise RimException.new("There are commits for module #{@module_info.local_path} on multiple target revisions (#{infos.branches.join(", ")}).")
