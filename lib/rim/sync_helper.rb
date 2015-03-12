@@ -22,15 +22,16 @@ class SyncHelper < CommandHelper
     RIM::git_session(@ws_root) do |s|
       branch = s.current_branch
       rim_branch = "rim/" + branch
-      branch_sha1 = s.rev_sha1(rim_branch)
+      branch_sha1 = nil
       if branch.empty?
         raise RimException.new("Not on a git branch.")
       elsif branch.start_with?("rim/")
         raise RimException.new("The current git branch '#{branch}' is a rim integration branch. Please switch to a non rim branch to proceed.")
       else
         begin
-          remote_rev = get_last_remote_revision(s, branch)
+          remote_rev = get_branch_start_revision(s, branch)
           rev = remote_rev ? remote_rev : branch
+          branch_sha1 = s.rev_sha1(rev)
           checkout_rim_branch(s, rim_branch, rev)
           sync_modules
         ensure
@@ -70,8 +71,8 @@ private
       end
   end
 
-  # get last remote revision the branch was synchronized with
-  def get_last_remote_revision(session, rev)
+  # get revision where the branch should start
+  def get_branch_start_revision(session, rev)
     # remote revs are where we stop traversal
     non_remote_revs = {}
     session.all_reachable_non_remote_revs(rev).each do |r| 
@@ -79,11 +80,15 @@ private
     end
     # make sure we deal only with sha1s
     rev = session.rev_sha1(rev)
-    while rev && non_remote_revs[rev]
-      parents = session.parent_revs(rev)
-      rev = parents.size > 0 ? parents.first : nil
+    while rev && non_remote_revs[rev] && !has_changed_riminfo?(session, rev) 
+      rev = get_parent(session, rev)
     end
     rev
+  end
+
+  # check whether revision has a changed .riminfo file
+  def has_changed_riminfo?(session, rev)
+    session.execute("git show --name-only --oneline #{rev}") =~ /\/\.riminfo$/
   end
 
   # check whether revision has a given ancestor
@@ -91,10 +96,15 @@ private
     # make sure we deal only with sha1s
     rev = session.rev_sha1(rev)
     while rev && rev != ancestor
-      parents = session.parent_revs(rev)
-      rev = parents.size > 0 ? parents.first : nil
+      rev = get_parent(session, rev)
     end
     rev != nil
+  end
+  
+  # get first parent node
+  def get_parent(session, rev)
+    parents = session.parent_revs(rev)
+    !parents.empty? ? parents.first : nil 
   end  
 
 end

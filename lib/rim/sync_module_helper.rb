@@ -2,6 +2,7 @@ require 'rim/module_helper'
 require 'rim/rim_info'
 require 'rim/file_helper'
 require 'rim/dirty_check'
+require 'tempfile'
 
 module RIM
   class SyncModuleHelper < ModuleHelper
@@ -20,10 +21,20 @@ module RIM
       # do we need to commit something?
         stat = s.status(@module_info.local_path)
         if stat.lines.any?
-          msg = "module #{@remote_path}: #{@rim_info.revision_sha1}"
-          # add before commit because the path can be below a not yet added path
-          s.execute("git add #{@module_info.local_path}")
-          s.execute("git commit #{@module_info.local_path} -m \"#{msg}\"")
+          msg_file = Tempfile.new('message')
+          begin
+            msg_file << "rim sync: module #{@module_info.local_path}\n\n"
+            msg_file << "remote_url: #{@rim_info.remote_url}\n"
+            msg_file << "target_revision: #{@rim_info.target_revision}\n"
+            msg_file << "revision_sha1: #{@rim_info.revision_sha1}\n"
+            msg_file << "ignores: #{@rim_info.ignores}\n"
+            msg_file.close
+            # add before commit because the path can be below a not yet added path
+            s.execute("git add #{@module_info.local_path}")
+            s.execute("git commit #{@module_info.local_path} -F #{msg_file.path}")
+          ensure
+            msg_file.close(true)
+          end
         end
       end
     end
