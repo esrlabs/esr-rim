@@ -43,14 +43,14 @@ class CommandHelper < Processor
   end
   
   def module_from_path(path, opts = {})
-    path = find_file_dir_in_workspace(path, RimInfo::InfoFileName)
-    if path
-      rim_info = RimInfo.from_dir(path)
+    module_path = find_file_dir_in_workspace(path || ".", RimInfo::InfoFileName)
+    if module_path
+      rim_info = RimInfo.from_dir(module_path)
       add_module_info(create_module_info(opts.has_key?(:remote_url) ? opts[:remote_url] : rim_info.remote_url, \
-          path, opts.has_key?(:target_revision) ? opts[:target_revision] : rim_info.target_revision, \
+          module_path, opts.has_key?(:target_revision) ? opts[:target_revision] : rim_info.target_revision, \
           opts.has_key?(:ignores) ? opts[:ignores] : rim_info.ignores))
     else
-      raise RimException.new("No module info found in '#{path}'.") 
+      raise RimException.new(path ? "No module info found in '#{path}'." : "No module info found.") 
     end
   end
   
