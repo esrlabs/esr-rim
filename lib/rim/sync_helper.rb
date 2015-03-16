@@ -36,7 +36,7 @@ class SyncHelper < CommandHelper
           sync_modules
         ensure
           s.execute("git checkout #{branch}")
-          s.execute("git clean -fd")
+          s.execute("git clean -xdf")
         end
       end
       if s.rev_sha1(rim_branch) != branch_sha1

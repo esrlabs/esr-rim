@@ -20,7 +20,15 @@ module RIM
       RIM::git_session(@ws_root) do |s|
       # do we need to commit something?
         stat = s.status(@module_info.local_path)
-        if stat.lines.any?
+        # ignored files?
+        ignored = stat.lines.select{ |l| l.ignored? }
+        if !ignored.empty?
+          messages = ["Cannot sync - files/dirs of #{@module_info.local_path} are ignored due to the workspace's .gitignore:"]
+          ignored.each do |l|
+            messages.push(l.file)
+          end
+          raise RimException.new(messages)
+        elsif stat.lines.any?
           msg_file = Tempfile.new('message')
           begin
             msg_file << "rim sync: module #{@module_info.local_path}\n\n"
