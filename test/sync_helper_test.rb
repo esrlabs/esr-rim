@@ -42,7 +42,6 @@ class SyncHelperTest < Minitest::Test
       assert log.size == 2
       assert log[0].include?("mod1")
       assert log[1].include?("mod2")
-      assert File.exist?(File.join(@ws_dir, ".rim"))
       assert File.exist?(File.join(@ws_dir, "mod1"))
       assert File.exist?(File.join(@ws_dir, "mod2"))
     end
@@ -72,7 +71,6 @@ class SyncHelperTest < Minitest::Test
       assert log[0].include?("mod1")
       assert log[1].include?("mod1")
       assert log[2].include?("mod2")
-      assert File.exist?(File.join(@ws_dir, ".rim"))
       assert File.exist?(File.join(@ws_dir, "mod1"))
       `cat #{File.join(@ws_dir, "mod1/readme.txt")}`.start_with?("Content. changed")
       assert File.exist?(File.join(@ws_dir, "mod2"))

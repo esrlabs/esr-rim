@@ -7,13 +7,13 @@ module RIM
 class SyncHelper < CommandHelper
 
   def initialize(workspace_root, logger, module_infos = nil)
-    @module_helpers = []
+    @module_infos = []
     super(workspace_root, logger, module_infos)
   end
 
   # called to add a module info
   def add_module_info(module_info)
-    @module_helpers.push(SyncModuleHelper.new(@ws_root, module_info, @logger))
+    @module_infos.push(module_info)
   end
 
   # sync all module changes into rim branch
@@ -29,21 +29,17 @@ class SyncHelper < CommandHelper
       elsif branch.start_with?("rim/")
         raise RimException.new("The current git branch '#{branch}' is a rim integration branch. Please switch to a non rim branch to proceed.")
       else
-        begin
-          remote_rev = get_branch_start_revision(s, branch)
-          rev = remote_rev ? remote_rev : branch
-          branch_sha1 = s.rev_sha1(rev)
-          checkout_rim_branch(s, rim_branch, rev)
-          sync_modules
-        ensure
-          RIM::git_session(".") do |pwds|
-            # Add a temporary file to avoid removal of working directory
-            Tempfile.new(".untracked", ".")
-            pwds.execute("git checkout #{branch}")
-            pwds.execute("git reset --hard #{branch}")
-            s.execute("git clean -xf -e .rim/")
-            # We didn't remove any folders yet. This will be done now only for folders below the working directory
-            pwds.execute("git clean -xdf -e .rim/")
+        remote_rev = get_branch_start_revision(s, branch)
+        rev = remote_rev ? remote_rev : branch
+        branch_sha1 = s.rev_sha1(rev)
+        Dir.mktmpdir do |tmpdir|
+          RIM::git_session(tmpdir) do |tmp_session|
+            remote_url = "file://" + @ws_root
+            create_rim_branch(s, rim_branch, rev)
+            tmp_session.execute("git clone #{remote_url} .")
+            tmp_session.execute("git checkout #{rim_branch}")
+            sync_modules(tmp_session)
+            tmp_session.execute("git push #{remote_url} #{rim_branch}:#{rim_branch}")
           end
         end
       end
@@ -57,25 +53,25 @@ class SyncHelper < CommandHelper
 
 private
   # sync all modules
-  def sync_modules
-    each_module_parallel("sync'ing", @module_helpers) do |m|
+  def sync_modules(session)
+    module_helpers = []
+    @module_infos.each do |module_info|
+      module_helpers.push(SyncModuleHelper.new(session.execute_dir, module_info, @logger))
+    end
+    each_module_parallel("sync'ing", module_helpers) do |m|
       m.sync
     end
-    @module_helpers.each do |m|
+    module_helpers.each do |m|
       m.commit
     end
   end
 
-  # checkout the rim branch
-  def checkout_rim_branch(session, rim_branch, rev)
+  # create the rim branch at the correct location
+  def create_rim_branch(session, rim_branch, rev)
       if !session.has_branch?(rim_branch) || !has_ancestor?(session, rim_branch, rev)
         # the destination branch is not existing or is not ancestor of the last remote revision
         # => create the branch at the remote revision 
-        session.execute("git checkout -B #{rim_branch} #{rev}")
-      else
-        # the destination branch is yet existing and has the remote revision as ancestor
-        # => put the changes onto the current branch
-        session.execute("git checkout #{rim_branch}")
+        session.execute("git branch -f #{rim_branch} #{rev}")
       end
   end
 
