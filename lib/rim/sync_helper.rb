@@ -36,7 +36,12 @@ class SyncHelper < CommandHelper
           sync_modules
         ensure
           s.execute("git checkout #{branch}")
-          s.execute("git clean -xdf")
+          s.execute("git reset --hard #{branch}")
+          s.execute("git clean -xf -e .rim/")
+          # We didn't remove any folders yet. This will be done now only for folders below the working directory
+          RIM::git_session(".") do |pwds|
+            pwds.execute("git clean -xdf -e .rim/")
+          end
         end
       end
       if s.rev_sha1(rim_branch) != branch_sha1
