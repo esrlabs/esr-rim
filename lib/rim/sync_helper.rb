@@ -1,5 +1,6 @@
 require 'rim/command_helper'
 require 'rim/sync_module_helper'
+require 'tempfile'
 
 module RIM
 
@@ -35,11 +36,13 @@ class SyncHelper < CommandHelper
           checkout_rim_branch(s, rim_branch, rev)
           sync_modules
         ensure
-          s.execute("git checkout #{branch}")
-          s.execute("git reset --hard #{branch}")
-          s.execute("git clean -xf -e .rim/")
-          # We didn't remove any folders yet. This will be done now only for folders below the working directory
           RIM::git_session(".") do |pwds|
+            # Add a temporary file to avoid removal of working directory
+            Tempfile.new(".untracked", ".")
+            pwds.execute("git checkout #{branch}")
+            pwds.execute("git reset --hard #{branch}")
+            s.execute("git clean -xf -e .rim/")
+            # We didn't remove any folders yet. This will be done now only for folders below the working directory
             pwds.execute("git clean -xdf -e .rim/")
           end
         end
