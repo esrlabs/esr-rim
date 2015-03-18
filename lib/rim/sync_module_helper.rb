@@ -66,9 +66,13 @@ module RIM
       stat = session.status(@module_info.local_path)
       ignored = stat.lines.select{ |l| l.ignored? }
       if ignored.empty?
-        session.execute("git add #{@module_info.local_path}") 
-        stat = session.status(@module_info.local_path)
-        ignored = stat.lines.select{ |l| l.ignored? }
+        session.execute("git add #{@module_info.local_path}") do |out, e|
+          ignored = parse_ignored_files(session, out, e)
+        end
+        if ignored.empty?
+          stat = session.status(@module_info.local_path)
+          ignored = stat.lines.select{ |l| l.ignored? }
+        end
       end
       if !ignored.empty?
         messages = ["Sync failed due to files/dirs of #{@module_info.local_path} which are ignored by workspace's .gitignore:"]
@@ -78,6 +82,22 @@ module RIM
         raise RimException.new(messages)
       end
       stat.lines.any?      
+    end
+
+    def parse_ignored_files(session, out, e)
+      first_line = true
+      ignored = []
+      out.split(/\r?\n/).each do |l|
+        raise e if first_line && !l.include?(".gitignore")
+        if File.exist?(File.expand_path(l, session.execute_dir))
+          ignored_line = GitSession::Status::Line.new
+          ignored_line.file = l
+          ignored_line.istat = "!"
+          ignored.push(ignored_line)
+        end
+        first_line = false
+      end
+      ignored
     end
 
   end
