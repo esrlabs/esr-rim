@@ -66,7 +66,7 @@ module RIM
       stat = session.status(@module_info.local_path)
       ignored = stat.lines.select{ |l| l.ignored? }
       if ignored.empty?
-        session.execute("git add #{@module_info.local_path}") do |out, e|
+        session.execute("git add --ignore-removal #{@module_info.local_path}") do |out, e|
           ignored = parse_ignored_files(session, out, e)
         end
         if ignored.empty?

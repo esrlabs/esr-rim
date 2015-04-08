@@ -11,6 +11,7 @@ require 'rim/version'
 include Subcommands
 
 # -C option was added in 1.8.5
+# --ignore-removal was added in 1.8.3
 MinimumGitVersion = "1.8.5"
 
 logger = Logger.new($stdout)
