@@ -55,6 +55,10 @@ global_options do |opts|
     logger.info prog_info
     exit
   end
+  opts.on("-l LOGLEVEL", [:debug, :info, :warn, :error, :fatal], "log level",
+    "one of [debug, info, warn, error, fatal]") do |v|
+    logger.level = Logger.const_get(v.upcase)
+  end
 end
 
 commands = {}
