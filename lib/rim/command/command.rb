@@ -20,7 +20,7 @@ class Command
     last_dir = nil
     dir = File.expand_path(start_dir)
     while dir != last_dir
-      if File.exist?("#{dir}/.git")
+      if File.exist?("#{dir}/.git") || dir =~ /\.git$/
         return dir
       end
       last_dir = dir
