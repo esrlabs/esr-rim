@@ -91,20 +91,6 @@ private
     RevisionInfo.new(module_status && module_status.dirty? ? dest_sha1 : rim_info.revision_sha1, src_sha1, rim_info, msg)
   end
   
-  # clone or fetch repository
-  def clone_or_fetch_repository(remote_url, local_path)
-    FileUtils.mkdir_p local_path
-    RIM::git_session(local_path) do |s|
-      if !File.exist?(File.join(local_path, ".git"))
-        s.execute("git clone #{remote_url} .")
-      else
-        s.execute("git fetch")
-      end
-    end
-    local_path
-  end
-
-
   # commit changes to session
   def commit_changes(session, branch, sha1, msg)
     if session.status.lines.any?

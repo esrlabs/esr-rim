@@ -33,18 +33,17 @@ class SyncHelper < CommandHelper
         remote_rev = get_branch_start_revision(s, branch)
         rev = remote_rev ? remote_rev : branch
         branch_sha1 = s.rev_sha1(rev)
-        Dir.mktmpdir do |tmpdir|
-          ws_dir = "#{tmpdir}/ws"
-          FileUtils.mkdir ws_dir
-          RIM::git_session(ws_dir) do |tmp_session|
-            remote_url = "file://" + @ws_root
-            create_rim_branch(s, rim_branch, rev)
-            tmp_session.execute("git clone #{remote_url} .")
-            tmp_session.execute("git checkout #{rim_branch}")
-            sync_modules(tmp_session)
-            tmp_session.execute("git push #{remote_url} #{rim_branch}:#{rim_branch}")
-          end
-          FileUtils.rm_rf ws_dir
+        remote_url = "file://" + @ws_root
+        create_rim_branch(s, rim_branch, rev)
+        tmpdir = clone_or_fetch_repository(remote_url, module_tmp_git_path(".ws"))
+        RIM::git_session(tmpdir) do |tmp_session|
+          if tmp_session.rev_sha1(rim_branch)
+            tmp_session.execute("git checkout --detach #{rim_branch}")
+            tmp_session.execute("git branch -D #{rim_branch}")
+          end 
+          tmp_session.execute("git checkout #{rim_branch}")
+          sync_modules(tmp_session)
+          tmp_session.execute("git push #{remote_url} #{rim_branch}:#{rim_branch}")
         end
       end
       if s.rev_sha1(rim_branch) != branch_sha1
