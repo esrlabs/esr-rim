@@ -1,6 +1,7 @@
 require 'rim/command_helper'
 require 'rim/sync_module_helper'
 require 'tempfile'
+require 'fileutils'
 
 module RIM
 
@@ -33,7 +34,9 @@ class SyncHelper < CommandHelper
         rev = remote_rev ? remote_rev : branch
         branch_sha1 = s.rev_sha1(rev)
         Dir.mktmpdir do |tmpdir|
-          RIM::git_session(tmpdir) do |tmp_session|
+          ws_dir = "#{tmpdir}/ws"
+          FileUtils.mkdir ws_dir
+          RIM::git_session(ws_dir) do |tmp_session|
             remote_url = "file://" + @ws_root
             create_rim_branch(s, rim_branch, rev)
             tmp_session.execute("git clone #{remote_url} .")
@@ -41,6 +44,7 @@ class SyncHelper < CommandHelper
             sync_modules(tmp_session)
             tmp_session.execute("git push #{remote_url} #{rim_branch}:#{rim_branch}")
           end
+          FileUtils.rm_rf ws_dir
         end
       end
       if s.rev_sha1(rim_branch) != branch_sha1
