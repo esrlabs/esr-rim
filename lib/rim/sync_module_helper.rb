@@ -88,7 +88,7 @@ module RIM
       first_line = true
       ignored = []
       out.split(/\r?\n/).each do |l|
-        raise e if first_line && !l.include?(".gitignore")
+        raise e || RimException.new("Cannot parse ignored files after git add:\n#{out}") if first_line && !l.include?(".gitignore")
         if File.exist?(File.expand_path(l, session.execute_dir))
           ignored_line = GitSession::Status::Line.new
           ignored_line.file = l
