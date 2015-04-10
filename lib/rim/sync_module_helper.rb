@@ -28,7 +28,7 @@ module RIM
             msg_file << "ignores: #{@rim_info.ignores}\n"
             msg_file.close
             # add before commit because the path can be below a not yet added path
-            s.execute("git add #{@module_info.local_path}")
+            s.execute("git add --ignore-removal #{@module_info.local_path}")
             s.execute("git commit #{@module_info.local_path} -F #{msg_file.path}")
           ensure
             msg_file.close(true)

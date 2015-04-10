@@ -97,6 +97,24 @@ class SyncHelperTest < Minitest::Test
     end
   end
   
+  def test_existing_non_ignored_files_are_removed_during_sync
+    mod1_info = create_module_git("mod1")
+    create_ws_git("testbr") do |s|
+      FileUtils.mkdir_p(File.join(@ws_remote_dir, "mod1"))
+      File.open(File.join(@ws_remote_dir, "mod1", "existing.txt"), "w") do |f|
+        f.write("Content")
+      end
+      s.execute("git add --all mod1")
+      s.execute("git commit -m \"Create existing file within mod1\"")
+    end
+    cut = RIM::SyncHelper.new(@ws_dir, @logger, [mod1_info])
+    cut.sync
+    RIM::git_session(@ws_dir) do |s|
+      s.execute("git rebase rim/testbr")
+      assert !File.exists?(File.join(@ws_dir, "mod1", "existing.txt"))
+    end
+  end
+
 private
   def create_ws_git(branch = "master")
     FileUtils.mkdir_p(@ws_remote_dir)
@@ -111,6 +129,7 @@ private
       end
       s.execute("git add .")
       s.execute("git commit -m \"Initial commit\"")
+      yield s if block_given?
     end
     FileUtils.mkdir_p(@ws_dir)
     RIM::git_session(@ws_dir) do |s|
