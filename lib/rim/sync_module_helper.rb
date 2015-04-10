@@ -16,12 +16,17 @@ module RIM
       export_module
     end
 
-    def commit
+    def commit(message = nil)
       RIM::git_session(@ws_root) do |s|
         if needs_commit?(s)
           msg_file = Tempfile.new('message')
           begin
-            msg_file << "rim sync: module #{@module_info.local_path}\n\n"
+            if message
+              msg_file << message
+            else
+              msg_file << "rim sync: module #{@module_info.local_path}"
+            end
+            msg_file << "\n\n"
             msg_file << "remote_url: #{@rim_info.remote_url}\n"
             msg_file << "target_revision: #{@rim_info.target_revision}\n"
             msg_file << "revision_sha1: #{@rim_info.revision_sha1}\n"

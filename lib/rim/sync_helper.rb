@@ -18,7 +18,7 @@ class SyncHelper < CommandHelper
   end
 
   # sync all module changes into rim branch
-  def sync
+  def sync(message = nil)
     check_ready
     # get the name of the current workspace branch
     RIM::git_session(@ws_root) do |s|
@@ -42,7 +42,7 @@ class SyncHelper < CommandHelper
             tmp_session.execute("git branch -D #{rim_branch}")
           end 
           tmp_session.execute("git checkout #{rim_branch}")
-          sync_modules(tmp_session)
+          sync_modules(tmp_session, message)
           tmp_session.execute("git push #{remote_url} #{rim_branch}:#{rim_branch}")
         end
       end
@@ -56,7 +56,7 @@ class SyncHelper < CommandHelper
 
 private
   # sync all modules
-  def sync_modules(session)
+  def sync_modules(session, message)
     module_helpers = []
     @module_infos.each do |module_info|
       module_helpers.push(SyncModuleHelper.new(session.execute_dir, module_info, @logger))
@@ -65,7 +65,7 @@ private
       m.sync
     end
     module_helpers.each do |m|
-      m.commit
+      m.commit(message)
     end
   end
 

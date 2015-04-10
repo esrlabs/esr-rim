@@ -35,6 +35,9 @@ class Sync < Command
     opts.on("-i", "--ignore [PATTERN_LIST]", String, "Set the ignore patterns by specifying a comma separated list.") do |ignores|
       @module_options[:ignores] = ignores || ""
     end
+    opts.on("-m", "--message MESSAGE", String, "Message header to provide to each commit.") do |message|
+      @message = message
+    end
   end
 
   def invoke()
@@ -55,7 +58,7 @@ class Sync < Command
       helper.module_from_path(ARGV.shift, @module_options)
     end
     helper.check_arguments
-    helper.sync
+    helper.sync(@message)
   end
 
 end

@@ -66,6 +66,28 @@ class SyncModuleHelperTest < Minitest::Test
     assert File.exists?(File.join(test_folder, "folder/file2"))
   end
 
+  def test_commit_message_is_set_by_default
+    info = RIM::ModuleInfo.new(@remote_git_dir, "test", "testbr")
+    cut = RIM::SyncModuleHelper.new(@ws_dir, info, @logger)
+    cut.sync
+    cut.commit
+    RIM::git_session(@ws_dir) do |s|
+      out = s.execute("git log HEAD~1..HEAD")
+      assert out.include?("rim sync: module")
+    end
+  end
+
+  def test_commit_message_can_be_changed
+    info = RIM::ModuleInfo.new(@remote_git_dir, "test", "testbr")
+    cut = RIM::SyncModuleHelper.new(@ws_dir, info, @logger)
+    cut.sync
+    cut.commit("This is the commit header.")
+    RIM::git_session(@ws_dir) do |s|
+      out = s.execute("git log HEAD~1..HEAD")
+      assert out.include?("This is the commit header.\n")
+    end
+  end
+
   def write_file(dir, name)
     FileUtils.mkdir_p(dir)
     File.open(File.join(dir, name), "w") do |f| 
