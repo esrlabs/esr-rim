@@ -268,6 +268,24 @@ def test_rev_history_status_merge_commit_bypass_remote_branch
   end
 end
 
+def test_status_works_on_bare_repository
+  src = empty_test_dir("rim_info")
+  RIM.git_session(src) do |s|
+    test_git_setup(s, src)
+  end
+  d = empty_test_dir("rim_info_bare")
+  RIM.git_session(d) do |s|
+    s.execute("git clone --bare file://#{src} .")
+    rs = RIM::StatusBuilder.new.rev_status(s, "mod1")
+    assert_equal s.rev_sha1("mod1"), rs.git_rev
+    assert_equal [], rs.parents
+    assert_equal 1, rs.modules.size
+    assert rs.modules.all?{|m| !m.dirty?}
+    assert_equal "ssh://gerrit-test/mod1", rs.modules.find{|m| m.dir == "mod1"}.rim_info.remote_url
+  end
+  
+end
+
 def teardown
   # clean up test dirs created during last test
   remove_test_dirs
