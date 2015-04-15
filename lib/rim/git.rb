@@ -90,7 +90,13 @@ class GitSession
 
   # returns the current branch
   def current_branch
-    execute 'git branch | grep "*" | sed "s/* //" | awk \'{printf $0}\''
+    out = execute "git branch"
+    out.split("\n").each do |l| 
+      if l =~ /^\*\s+(\S+)/
+        return $1
+      end
+    end
+    nil
   end
   
   # check whether branch exists
