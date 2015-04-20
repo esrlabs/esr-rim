@@ -26,11 +26,6 @@ module RIM
             else
               msg_file << "rim sync: module #{@module_info.local_path}"
             end
-            msg_file << "\n\n"
-            msg_file << "remote_url: #{@rim_info.remote_url}\n"
-            msg_file << "target_revision: #{@rim_info.target_revision}\n"
-            msg_file << "revision_sha1: #{@rim_info.revision_sha1}\n"
-            msg_file << "ignores: #{@rim_info.ignores}\n"
             msg_file.close
             # add before commit because the path can be below a not yet added path
             s.execute("git add --ignore-removal #{@module_info.local_path}")

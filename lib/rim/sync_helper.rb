@@ -1,5 +1,6 @@
 require 'rim/command_helper'
 require 'rim/sync_module_helper'
+require 'rim/status_builder'
 require 'tempfile'
 require 'fileutils'
 
@@ -30,11 +31,13 @@ class SyncHelper < CommandHelper
       elsif branch.start_with?("rim/")
         raise RimException.new("The current git branch '#{branch}' is a rim integration branch. Please switch to a non rim branch to proceed.")
       else
-        remote_rev = get_branch_start_revision(s, branch)
-        rev = remote_rev ? remote_rev : branch
+        remote_rev = get_latest_remote_revision(s, branch)
+        rev = get_latest_clean_path_revision(s, branch, remote_rev)
+        if !s.has_branch?(rim_branch) || has_ancestor?(s, branch, s.rev_sha1(rim_branch)) || !has_ancestor?(s, rim_branch, remote_rev)
+          s.execute("git branch -f #{rim_branch} #{rev}")
+        end
         branch_sha1 = s.rev_sha1(rev)
         remote_url = "file://" + @ws_root
-        create_rim_branch(s, rim_branch, rev)
         tmpdir = clone_or_fetch_repository(remote_url, module_tmp_git_path(".ws"))
         RIM::git_session(tmpdir) do |tmp_session|
           if tmp_session.rev_sha1(rim_branch)
@@ -69,17 +72,21 @@ private
     end
   end
 
-  # create the rim branch at the correct location
-  def create_rim_branch(session, rim_branch, rev)
-      if !session.has_branch?(rim_branch) || !has_ancestor?(session, rim_branch, rev)
-        # the destination branch is not existing or is not ancestor of the last remote revision
-        # => create the branch at the remote revision 
-        session.execute("git branch -f #{rim_branch} #{rev}")
-      end
+  # get latest revision from which all parent revisions are clean 
+  def get_latest_clean_path_revision(session, rev, remote_rev)
+    # make sure we deal only with sha1s
+    rev = session.rev_sha1(rev)
+    clean_rev = rev;
+    while rev && rev != remote_rev
+      dirty = StatusBuilder.new().rev_status(session, rev).dirty?
+      rev = get_parent(session, rev)
+      clean_rev = rev if dirty
+    end
+    clean_rev
   end
 
-  # get revision where the branch should start
-  def get_branch_start_revision(session, rev)
+  # get latest remote revision
+  def get_latest_remote_revision(session, rev)
     # remote revs are where we stop traversal
     non_remote_revs = {}
     session.all_reachable_non_remote_revs(rev).each do |r| 
@@ -87,15 +94,11 @@ private
     end
     # make sure we deal only with sha1s
     rev = session.rev_sha1(rev)
-    while rev && non_remote_revs[rev] && !has_changed_riminfo?(session, rev) 
+    start_rev = rev;
+    while rev && non_remote_revs[rev]
       rev = get_parent(session, rev)
     end
     rev
-  end
-
-  # check whether revision has a changed .riminfo file
-  def has_changed_riminfo?(session, rev)
-    session.execute("git show --name-only --oneline #{rev}") =~ /\/\.riminfo$/
   end
 
   # check whether revision has a given ancestor
