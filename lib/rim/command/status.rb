@@ -53,7 +53,11 @@ class Status < Command
   private 
 
   def any_dirty?(stat)
-    stat.dirty? || stat.parents.any?{|p| any_dirty?(p)}
+    # don't check the last (remote) status nodes (leaves of the status tree)
+    # these are normally remote commits which could be dirty
+    # the initial commit would also be a leave
+    # TODO: see print_status
+    stat.dirty? || stat.parents.any?{|p| !p.parents.empty? && any_dirty?(p)}
   end
 
   def print_status(gs, stat)
