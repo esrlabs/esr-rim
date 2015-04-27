@@ -9,9 +9,14 @@ class StatusBuilder
   # status object tree for revision rev
   # returns the root status object which points to any parent status objects
   # note that merge commits mean that the status tree branches
+  # at the point were the merged branch branched off, the status tree joins
+  # i.e. the parent status objects are the same at this point
+  #
   # stops traversing a specific branch when a commit is found which is an ancestor
   # of :stop_rev or any remote branch if :stop_rev is not provided 
+  #
   # the leafs of the tree are the stop commits or commits which have no parents
+  #
   def rev_history_status(git_session, rev, options={})
     stop_rev = options[:stop_rev]
     relevant_revs = {}
@@ -30,7 +35,7 @@ class StatusBuilder
     build_rev_history_status(git_session, rev, relevant_revs)
   end
 
-  # status object for revision rev
+  # status object for single revision +rev+ without status of ancestors
   def rev_status(git_session, rev)
     out =git_session.execute("git ls-tree -r --name-only #{rev}")
     mod_stats = []
@@ -47,7 +52,8 @@ class StatusBuilder
     stat
   end
 
-  # status object for module revision rev
+  # status object for a single module at +local_path+ in revision +rev+
+  # returns nil if there is no such module in this revision
   def rev_module_status(git_session, rev, local_path)
     mod_stat = nil
     if git_session.execute("git ls-tree -r --name-only #{rev}").split("\n").include?(File.join(local_path, ".riminfo"))
