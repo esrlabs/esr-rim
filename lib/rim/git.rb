@@ -106,6 +106,13 @@ class GitSession
     end
   end 
 
+  # check whether remote repository is valid
+  def has_valid_remote_repository?()
+    execute("git ls-remote") do |b, e|
+      return !e
+    end
+  end 
+
   # returns the parent commits of rev as SHA-1s 
   # returns an empty array if there are no parents (e.g. orphan or initial)
   def parent_revs(rev)

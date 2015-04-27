@@ -35,6 +35,11 @@ class FileHelper
     end
   end
   
+  def self.make_empty_dir(dir)
+    FileUtils.rm_rf dir
+    FileUtils.mkdir_p(dir)
+  end
+  
 private
   
   def self.normalize_patterns(patterns = [])

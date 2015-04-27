@@ -1,5 +1,6 @@
 require 'fileutils'
 require 'pathname'
+require 'rim/file_helper'
 require 'rim/git'
 require 'rim/rim_exception'
 require 'rake'
@@ -71,7 +72,8 @@ end
 def clone_or_fetch_repository(remote_url, local_path)
   FileUtils.mkdir_p local_path
   RIM::git_session(local_path) do |s|
-    if !File.exist?(File.join(local_path, ".git"))
+    if !File.exist?(File.join(local_path, ".git")) || !s.has_valid_remote_repository?()
+      FileHelper.make_empty_dir(local_path)
       s.execute("git clone #{remote_url} .")
     else
       s.execute("git fetch")
