@@ -82,19 +82,6 @@ class StatusBuilder
 
   private
 
-  def build_rev_history_status(gs, rev, relevant_revs, status_cache={})
-    return status_cache[rev] if status_cache[rev]
-    stat = rev_status(gs, rev)
-    status_cache[rev] = stat
-    if relevant_revs[rev]
-      # for each parent commit
-      gs.parent_revs(rev).each do |p|
-        stat.parents << build_rev_history_status(gs, p, relevant_revs, status_cache)
-      end
-    end
-    stat
-  end
-
   def build_module_status(root_dir, dir)
     RevStatus::ModuleStatus.new(
       Pathname.new(dir).relative_path_from(Pathname.new(root_dir)).to_s,
@@ -115,18 +102,9 @@ class StatusBuilder
   #
   # for this to work, the chain must be walked from older commit to newer ones
   #
-  # at the end of the chain, the status must be calculated for the last node;
-  # there are two options for that:
+  # at the end of the chain, the status must be calculated in the regular "non-fast" way
   #
-  # 1. examine the dirty state for each module present it that commit
-  # 2. find all modules and assume the state is clean
-  #
-  # option 2 is faster for repositories with many modules; normally it's also
-  # safe to assume the start commits are clean since those are normally 
-  # remote commits which have been checked before; however, this may depend
-  # on how the user uses rim
-  #
-  def build_rev_history_status_fast(gs, rev, relevant_revs, status_cache={})
+  def build_rev_history_status(gs, rev, relevant_revs, status_cache={})
     # * copy the status object from the parent commit
     # * check if .riminfo files were added or removed
     #   adapt the status object accordingly
@@ -135,44 +113,61 @@ class StatusBuilder
     #   if so, re-calculate the dirty state for those modules and update the status object
     return status_cache[rev] if status_cache[rev]
     if relevant_revs[rev]
-      parent_stats = gs.parent_revs(rev).collect do |p|
-        build_rev_history_status_fast(gs, p, relevant_revs, status_cache)
-      end
-      if parent_stats.size > 0
-        base_stat = parent_stats.first
-      else
-        # no parents, empty base status object
-        base_stat = RevStatus.new
-      end
-    else
-    end
-    stat
-  end
+      parent_revs = gs.parent_revs(rev)
+      if parent_revs.size > 0
+        # build status for all parent nodes
+        parent_stats = parent_refs.collect do |p|
+          build_rev_history_status(gs, p, relevant_revs, status_cache)
+        end
 
-  def build_start_node_status(gs, rev, mode)
-    if mode == :fast
-      build_rev_status_fast(gs, rev)
+        # if this is a merge commit with multiple parents
+        # we decide to use the first commit (git primary parent)
+        # note that it's not really important, which one we choose
+        # just make sure to use the same commit when checking for changed files
+        base_stat = parent_stats.first
+        
+        changed_files = gs.changed_files(rev, parent_revs.first)
+
+        # build list of modules in this commit
+        module_dirs = base_stat.modules.collect{|m| m.dir}
+        changed_files.each do |f|
+          if File.basename(f.path) == RimInfo::InfoFileName
+            if f.kind == :added
+              module_dirs << File.dirname(f.path)
+            elsif f.kind == :deleted
+              module_dirs.delete(File.dirname(f.path))
+            end
+          end
+        end
+
+        # a module needs to be checked if any of the files within were touched
+        check_dirs = module_dirs.select{|d| changed_files.any?{|f| f.path.start_with?(d)} }
+
+        module_stats = []
+        # check out all modules to be checked at once
+        gs.within_exported_rev(rev, check_dirs) do |ws|
+          # build module stats
+          module_dirs.each do |d|
+            if check_dirs.include?(d)
+              module_stats << build_module_status(ws, File.join(ws, d))
+            else
+              base_mod = base_stat.modules.find{|m| m.dir == d}
+              module_stats << RevStatus::ModuleStatus.new(d, base_mod.rim_info, base_mod.dirty?)
+            end
+          end
+        end
+
+        stat = RevStatus.new(module_stats)
+        stat.git_rev = gs.rev_sha1(rev)
+        stat.parents.concat(parent_stats)
+      else
+        # no parents, need to do a full check
+        rev_status(gs, rev)
+      end
     else
+      # first "non-relevant", do the full check
       rev_status(gs, rev)
     end
-  end
-
-  def build_rev_status_fast(gs, rev)
-    out = gs.execute("git ls-tree -r --name-only #{rev}")
-    mod_stats = []
-    out.split("\n").each do |l|
-      if File.basename(l) == RimInfo::InfoFileName
-        rel_path = File.dirname(l)
-        mod_stats << RevStatus::ModuleStatus.new(
-          File.join(gs.execute_dir, rel_path),
-          RimInfo.from_dir(dir),
-          DirtyCheck.dirty?(dir)
-        )
-      end
-    end
-    stat = RevStatus.new(mod_stats)
-    stat.git_rev = gs.rev_sha1(rev)
-    stat
   end
 
 end
