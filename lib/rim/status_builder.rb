@@ -38,13 +38,16 @@ class StatusBuilder
   # status object for single revision +rev+ without status of ancestors
   def rev_status(git_session, rev)
     out =git_session.execute("git ls-tree -r --name-only #{rev}")
-    mod_stats = []
+    mod_dirs = []
     out.split("\n").each do |l|
       if File.basename(l) == RimInfo::InfoFileName
-        rel_path = File.dirname(l)
-        git_session.within_exported_rev(rev, rel_path) do |d|
-          mod_stats << build_module_status(d, d+"/"+rel_path)
-        end
+        mod_dirs << File.dirname(l)
+      end
+    end
+    mod_stats = []
+    git_session.within_exported_rev(rev, mod_dirs) do |d|
+      mod_dirs.each do |rel_path|
+        mod_stats << build_module_status(d, d+"/"+rel_path)
       end
     end
     stat = RevStatus.new(mod_stats)
@@ -57,7 +60,7 @@ class StatusBuilder
   def rev_module_status(git_session, rev, local_path)
     mod_stat = nil
     if git_session.execute("git ls-tree -r --name-only #{rev}").split("\n").include?(File.join(local_path, ".riminfo"))
-      git_session.within_exported_rev(rev, local_path) do |d|
+      git_session.within_exported_rev(rev, [local_path]) do |d|
         mod_stat = build_module_status(d, File.join(d, local_path))
       end
     end
