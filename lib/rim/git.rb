@@ -188,7 +188,7 @@ class GitSession
   # with one argument only, no changes will be returned for merge commits
   # use the two argument variant for merge commits and decide for one parent
   def changed_files(rev, rev_from=nil)
-    out = execute "git diff-tree -r --no-commit-id #{rev} #{rev_from}"
+    out = execute "git diff-tree -r --no-commit-id #{rev_from} #{rev}"
     out.split("\n").collect do |l|
       cols = l.split
       path = cols[5]

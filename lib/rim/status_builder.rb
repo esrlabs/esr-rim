@@ -112,11 +112,12 @@ class StatusBuilder
     # * check if within this commit files were changed affecting any of the modules in the status object
     #   if so, re-calculate the dirty state for those modules and update the status object
     return status_cache[rev] if status_cache[rev]
+    stat = nil
     if relevant_revs[rev]
       parent_revs = gs.parent_revs(rev)
       if parent_revs.size > 0
         # build status for all parent nodes
-        parent_stats = parent_refs.collect do |p|
+        parent_stats = parent_revs.collect do |p|
           build_rev_history_status(gs, p, relevant_revs, status_cache)
         end
 
@@ -162,12 +163,13 @@ class StatusBuilder
         stat.parents.concat(parent_stats)
       else
         # no parents, need to do a full check
-        rev_status(gs, rev)
+        stat = rev_status(gs, rev)
       end
     else
       # first "non-relevant", do the full check
-      rev_status(gs, rev)
+      stat = rev_status(gs, rev)
     end
+    status_cache[rev] = stat
   end
 
 end

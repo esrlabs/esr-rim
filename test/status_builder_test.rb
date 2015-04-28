@@ -268,6 +268,93 @@ def test_rev_history_status_merge_commit_bypass_remote_branch
   end
 end
 
+#            o <- mod1 deleted
+#            |
+# master ->  o
+# /mod2      |
+#            o
+#            |
+#   mod1 ->  o
+#            |
+#            o
+#
+def test_rev_history_status_module_removed
+  d = empty_test_dir("rim_info")
+
+  RIM.git_session(d) do |s|
+    test_git_setup(s, d)
+    s.execute "git rm -r mod1"
+    s.execute "git commit -m \"removed mod1\""
+
+    rs = RIM::StatusBuilder.new.rev_history_status(s, "master")
+    assert_equal 5, all_status_objects(rs).size
+
+    assert_equal 1, rs.modules.size
+    assert_equal 2, rs.parents.first.modules.size
+  end
+end
+
+#            o <- mod1 made dirty
+#            |
+# master ->  o
+# /mod2      |
+#            o
+#            |
+#   mod1 ->  o
+#            |
+#            o
+#
+def test_rev_history_status_module_modified_dirty
+  d = empty_test_dir("rim_info")
+
+  RIM.git_session(d) do |s|
+    test_git_setup(s, d)
+    write_file("#{d}/mod1/newfile", "nothing")
+    s.execute "git add ."
+    s.execute "git commit -m \"new file making mod1 dirty\""
+
+    rs = RIM::StatusBuilder.new.rev_history_status(s, "master")
+    assert_equal 5, all_status_objects(rs).size
+
+    assert_equal 2, rs.modules.size
+    ms = rs.modules.find{|m| m.dir == "mod1"}
+    assert ms.dirty?
+    ms = rs.modules.find{|m| m.dir == "mod2"}
+    assert !ms.dirty?
+  end
+end
+
+#            o <- mod1 modified but clean
+#            |
+# master ->  o
+# /mod2      |
+#            o
+#            |
+#   mod1 ->  o
+#            |
+#            o
+#
+def test_rev_history_status_module_modified_clean
+  d = empty_test_dir("rim_info")
+
+  RIM.git_session(d) do |s|
+    test_git_setup(s, d)
+    write_file("#{d}/mod1/newfile", "nothing")
+    RIM::DirtyCheck.mark_clean("#{d}/mod1")
+    s.execute "git add ."
+    s.execute "git commit -m \"new file making mod1 dirty\""
+
+    rs = RIM::StatusBuilder.new.rev_history_status(s, "master")
+    assert_equal 5, all_status_objects(rs).size
+
+    assert_equal 2, rs.modules.size
+    ms = rs.modules.find{|m| m.dir == "mod1"}
+    assert !ms.dirty?
+    ms = rs.modules.find{|m| m.dir == "mod2"}
+    assert !ms.dirty?
+  end
+end
+
 def test_status_works_on_bare_repository
   src = empty_test_dir("rim_info")
   RIM.git_session(src) do |s|
@@ -283,7 +370,6 @@ def test_status_works_on_bare_repository
     assert rs.modules.all?{|m| !m.dirty?}
     assert_equal "ssh://gerrit-test/mod1", rs.modules.find{|m| m.dir == "mod1"}.rim_info.remote_url
   end
-  
 end
 
 def teardown
@@ -297,6 +383,14 @@ def all_status_objects(rs)
   [rs] | rs.parents.collect{|p| all_status_objects(p)}.flatten
 end
 
+# master ->  o
+# /mod2      |
+#            o
+#            |
+#   mod1 ->  o
+#            |
+#            o
+#
 def test_git_setup(gs, dir)
   gs.execute "git init"
 
