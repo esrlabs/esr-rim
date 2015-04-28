@@ -105,12 +105,6 @@ class StatusBuilder
   # at the end of the chain, the status must be calculated in the regular "non-fast" way
   #
   def build_rev_history_status(gs, rev, relevant_revs, status_cache={})
-    # * copy the status object from the parent commit
-    # * check if .riminfo files were added or removed
-    #   adapt the status object accordingly
-    # * calc the dirty state for new modules and update the status object
-    # * check if within this commit files were changed affecting any of the modules in the status object
-    #   if so, re-calculate the dirty state for those modules and update the status object
     return status_cache[rev] if status_cache[rev]
     stat = nil
     if relevant_revs[rev]
