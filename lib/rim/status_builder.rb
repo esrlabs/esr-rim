@@ -45,6 +45,10 @@ class StatusBuilder
       end
     end
     mod_stats = []
+    # export all relevant modules at once
+    # this makes status calculation significantly faster compared
+    # to exporting each module separately 
+    # (e.g. 1.0s instead of 1.5s on linux for a commit with 20 modules)
     git_session.within_exported_rev(rev, mod_dirs) do |d|
       mod_dirs.each do |rel_path|
         mod_stats << build_module_status(d, d+"/"+rel_path)
