@@ -159,10 +159,13 @@ class GitSession
   # returns the value returned by the block
   def within_exported_rev(rev, paths=[])
     Dir.mktmpdir("rim") do |d|
-      export_rev(rev, d, paths)
+      c = File.join(d, "content")
+      FileUtils.mkdir(c)
+      export_rev(rev, c, paths)
       # return contents of yielded block
       # mktmpdir returns value return by our block
-      yield d
+      yield c
+      FileUtils.rm_rf(c)
     end
   end
     
