@@ -73,6 +73,7 @@ class Status < Command
       out = gs.execute "git rev-list --format=oneline -n 1 #{stat.git_rev}" 
       if out =~ /^(\w+) (.*)/
         sha1, comment = $1, $2
+        comment = comment[0..76]+"..." if comment.size > 80
         headline += "#{stat_info} #{sha1[0..6]} #{comment}"
       end
     else
