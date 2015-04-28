@@ -146,16 +146,16 @@ class StatusBuilder
 
         module_stats = []
         # check out all modules to be checked at once
-        gs.within_exported_rev(rev, check_dirs) do |ws|
-          # build module stats
-          module_dirs.each do |d|
-            if check_dirs.include?(d)
+        if check_dirs.size > 0
+          gs.within_exported_rev(rev, check_dirs) do |ws|
+            check_dirs.each do |d|
               module_stats << build_module_status(ws, File.join(ws, d))
-            else
-              base_mod = base_stat.modules.find{|m| m.dir == d}
-              module_stats << RevStatus::ModuleStatus.new(d, base_mod.rim_info, base_mod.dirty?)
             end
           end
+        end
+        (module_dirs - check_dirs).each do |d|
+          base_mod = base_stat.modules.find{|m| m.dir == d}
+          module_stats << RevStatus::ModuleStatus.new(d, base_mod.rim_info, base_mod.dirty?)
         end
 
         stat = RevStatus.new(module_stats)
