@@ -179,6 +179,33 @@ class GitSession
     out.strip
   end
 
+  ChangedFile = Struct.new(:path, :kind)
+
+  # returns a list of all files which changed in commit +rev+
+  # together with the kind of the change (:modified, :deleted, :added)
+  #
+  # if +from_rev+ is given, lists changes between +from_rev and +rev+
+  # with one argument only, no changes will be returned for merge commits
+  # use the two argument variant for merge commits and decide for one parent
+  def changed_files(rev, rev_from=nil)
+    out = execute "git diff-tree -r --no-commit-id #{rev} #{rev_from}"
+    out.split("\n").collect do |l|
+      cols = l.split
+      path = cols[5]
+      kind = case cols[4]
+        when "M"
+          :modified
+        when "A"
+          :added
+        when "D"
+          :deleted
+        else
+          nil
+        end
+      ChangedFile.new(path, kind)
+    end
+  end
+
   # 3 most significant numbers of git version of nil if it can't be determined
   def git_version
     out = execute("git --version")

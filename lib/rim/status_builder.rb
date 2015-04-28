@@ -109,6 +109,72 @@ class StatusBuilder
     }
   end
 
+  # fast building of the status of an ancestor chain works by checking
+  # the dirty state of modules only when any files affecting some module 
+  # were changed; otherwise the status of the module in the ancestor is assumed
+  #
+  # for this to work, the chain must be walked from older commit to newer ones
+  #
+  # at the end of the chain, the status must be calculated for the last node;
+  # there are two options for that:
+  #
+  # 1. examine the dirty state for each module present it that commit
+  # 2. find all modules and assume the state is clean
+  #
+  # option 2 is faster for repositories with many modules; normally it's also
+  # safe to assume the start commits are clean since those are normally 
+  # remote commits which have been checked before; however, this may depend
+  # on how the user uses rim
+  #
+  def build_rev_history_status_fast(gs, rev, relevant_revs, status_cache={})
+    # * copy the status object from the parent commit
+    # * check if .riminfo files were added or removed
+    #   adapt the status object accordingly
+    # * calc the dirty state for new modules and update the status object
+    # * check if within this commit files were changed affecting any of the modules in the status object
+    #   if so, re-calculate the dirty state for those modules and update the status object
+    return status_cache[rev] if status_cache[rev]
+    if relevant_revs[rev]
+      parent_stats = gs.parent_revs(rev).collect do |p|
+        build_rev_history_status_fast(gs, p, relevant_revs, status_cache)
+      end
+      if parent_stats.size > 0
+        base_stat = parent_stats.first
+      else
+        # no parents, empty base status object
+        base_stat = RevStatus.new
+      end
+    else
+    end
+    stat
+  end
+
+  def build_start_node_status(gs, rev, mode)
+    if mode == :fast
+      build_rev_status_fast(gs, rev)
+    else
+      rev_status(gs, rev)
+    end
+  end
+
+  def build_rev_status_fast(gs, rev)
+    out = gs.execute("git ls-tree -r --name-only #{rev}")
+    mod_stats = []
+    out.split("\n").each do |l|
+      if File.basename(l) == RimInfo::InfoFileName
+        rel_path = File.dirname(l)
+        mod_stats << RevStatus::ModuleStatus.new(
+          File.join(gs.execute_dir, rel_path),
+          RimInfo.from_dir(dir),
+          DirtyCheck.dirty?(dir)
+        )
+      end
+    end
+    stat = RevStatus.new(mod_stats)
+    stat.git_rev = gs.rev_sha1(rev)
+    stat
+  end
+
 end
 
 end
