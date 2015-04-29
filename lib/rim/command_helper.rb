@@ -13,6 +13,7 @@ class CommandHelper < Processor
 
   def initialize(workspace_root, logger, module_infos = nil)
     super(workspace_root, logger)
+    @paths = []
     @logger = logger
     if module_infos
       module_infos.each do |m|
@@ -37,18 +38,31 @@ class CommandHelper < Processor
   def modules_from_manifest(path)
     manifest = read_manifest(path)
     manifest.modules.each do |mod|
-      add_module_info(create_module_info(mod.remote_path, mod.local_path, mod.target_revision, mod.ignores))
+      add_unique_module_info(create_module_info(mod.remote_path, mod.local_path, mod.target_revision, mod.ignores))
     end
     true
+  end
+  
+  def modules_from_paths(paths, opts = {})
+    if paths.empty?
+      module_from_path(nil, opts)
+    elsif paths.length == 1 || opts.empty?
+      while !paths.empty?
+        module_from_path(paths.shift, opts)
+      end
+    else
+      raise RimException.new("Multiple modules cannot be used with additional options.")
+    end
   end
   
   def module_from_path(path, opts = {})
     module_path = find_file_dir_in_workspace(path || ".", RimInfo::InfoFileName)
     if module_path
       rim_info = RimInfo.from_dir(module_path)
-      add_module_info(create_module_info(opts.has_key?(:remote_url) ? opts[:remote_url] : rim_info.remote_url, \
+      add_unique_module_info(create_module_info(opts.has_key?(:remote_url) ? opts[:remote_url] : rim_info.remote_url, \
           module_path, opts.has_key?(:target_revision) ? opts[:target_revision] : rim_info.target_revision, \
           opts.has_key?(:ignores) ? opts[:ignores] : rim_info.ignores))
+      module_path
     else
       raise RimException.new(path ? "No module info found in '#{path}'." : "No module info found.") 
     end
@@ -59,12 +73,22 @@ class CommandHelper < Processor
       status = StatusBuilder.new.fs_status(@ws_root)
       status.modules.each do |mod|
         rim_info = mod.rim_info
-        add_module_info(ModuleInfo.new(rim_info.remote_url, mod.dir, rim_info.upstream, rim_info.ignores))
+        add_unique_module_info(ModuleInfo.new(rim_info.remote_url, mod.dir, rim_info.upstream, rim_info.ignores))
       end
       true
     end
   end
 
+  def add_unique_module_info(module_info)
+    if !@paths.include?(module_info.local_path)
+      @paths.push(module_info.local_path)
+      add_module_info(module_info)
+    else
+      raise RimException.new("Module '#{module_info.local_path}' specified more than once.")
+    end
+  end
+
+protected
   def add_module_info(module_info)
   end
 

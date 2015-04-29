@@ -6,8 +6,9 @@ require 'tempfile'
 
 module RIM
   class SyncModuleHelper < ModuleHelper
-    def initialize(workspace_root, module_info, logger)
+    def initialize(dest_root, workspace_root, module_info, logger)
       super(workspace_root, module_info, logger)
+      @dest_root = dest_root
     end
 
     # do the local sync without committing
@@ -17,7 +18,7 @@ module RIM
     end
 
     def commit(message = nil)
-      RIM::git_session(@ws_root) do |s|
+      RIM::git_session(@dest_root) do |s|
         if needs_commit?(s)
           msg_file = Tempfile.new('message')
           begin
@@ -47,7 +48,7 @@ module RIM
         if !s.rev_sha1(@module_info.target_revision)
           raise RimException.new("Unknown target revision '#{@module_info.target_revision}' for module '#{@module_info.local_path}'.")
         end
-        local_path = File.join(@ws_root, @module_info.local_path)
+        local_path = File.join(@dest_root, @module_info.local_path)
         prepare_empty_folder(local_path, @module_info.ignores)
         s.execute("git archive --format tar #{@module_info.target_revision} | tar -x -C #{local_path}")
         sha1 = s.execute("git rev-parse #{@module_info.target_revision}").strip

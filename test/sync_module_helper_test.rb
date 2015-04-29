@@ -41,7 +41,7 @@ class SyncModuleHelperTest < Minitest::Test
 
   def test_files_are_copied_to_working_dir
     info = RIM::ModuleInfo.new(@remote_git_dir, "test", "testbr")
-    cut = RIM::SyncModuleHelper.new(@ws_dir, info, @logger)
+    cut = RIM::SyncModuleHelper.new(@ws_dir, @ws_dir, info, @logger)
     cut.sync
     assert File.exists?(File.join(@ws_dir, "test/readme.txt"))
     assert File.exists?(File.join(@ws_dir, "test/.riminfo"))
@@ -55,7 +55,7 @@ class SyncModuleHelperTest < Minitest::Test
     write_file(File.join(test_folder, "folder"), "file2")
     write_file(File.join(test_folder, "folder2"), "file1")
     info = RIM::ModuleInfo.new(@remote_git_dir, "test", "testbr", "**/file2")
-    cut = RIM::SyncModuleHelper.new(@ws_dir, info, @logger)
+    cut = RIM::SyncModuleHelper.new(@ws_dir, @ws_dir, info, @logger)
     cut.sync
     assert File.exists?(File.join(test_folder, "readme.txt"))
     assert File.exists?(File.join(test_folder, ".riminfo"))
@@ -68,7 +68,7 @@ class SyncModuleHelperTest < Minitest::Test
 
   def test_commit_message_is_set_by_default
     info = RIM::ModuleInfo.new(@remote_git_dir, "test", "testbr")
-    cut = RIM::SyncModuleHelper.new(@ws_dir, info, @logger)
+    cut = RIM::SyncModuleHelper.new(@ws_dir, @ws_dir, info, @logger)
     cut.sync
     cut.commit
     RIM::git_session(@ws_dir) do |s|
@@ -79,7 +79,7 @@ class SyncModuleHelperTest < Minitest::Test
 
   def test_commit_message_can_be_changed
     info = RIM::ModuleInfo.new(@remote_git_dir, "test", "testbr")
-    cut = RIM::SyncModuleHelper.new(@ws_dir, info, @logger)
+    cut = RIM::SyncModuleHelper.new(@ws_dir, @ws_dir, info, @logger)
     cut.sync
     cut.commit("This is the commit header.")
     RIM::git_session(@ws_dir) do |s|

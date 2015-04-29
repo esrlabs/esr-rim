@@ -36,7 +36,7 @@ class SyncHelper < CommandHelper
         if !s.has_branch?(rim_branch) || has_ancestor?(s, branch, s.rev_sha1(rim_branch)) || !has_ancestor?(s, rim_branch, remote_rev)
           s.execute("git branch -f #{rim_branch} #{rev}")
         end
-        branch_sha1 = s.rev_sha1(rev)
+        branch_sha1 = s.rev_sha1(rim_branch)
         remote_url = "file://" + @ws_root
         tmpdir = clone_or_fetch_repository(remote_url, module_tmp_git_path(".ws"))
         RIM::git_session(tmpdir) do |tmp_session|
@@ -62,7 +62,7 @@ private
   def sync_modules(session, message)
     module_helpers = []
     @module_infos.each do |module_info|
-      module_helpers.push(SyncModuleHelper.new(session.execute_dir, module_info, @logger))
+      module_helpers.push(SyncModuleHelper.new(session.execute_dir, @ws_root, module_info, @logger))
     end
     each_module_parallel("sync'ing", module_helpers) do |m|
       m.sync

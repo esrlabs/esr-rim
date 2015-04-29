@@ -55,7 +55,7 @@ class Sync < Command
             @module_options[:ignores]))
       end 
     else
-      helper.module_from_path(ARGV.shift, @module_options)
+      helper.modules_from_paths(ARGV, @module_options)
     end
     helper.check_arguments
     helper.sync(@message)
