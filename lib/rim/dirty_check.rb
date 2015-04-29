@@ -91,7 +91,9 @@ class DirtyCheck
     fn = dir+"/"+filename
     unless File.directory?(fn)
       # file contents
-      sha1.file(fn)
+      File.open(fn, "rb") do |f|
+        sha1.update(f.read.gsub("\r\n", "\n"))
+      end
     end
   end
 

@@ -54,6 +54,9 @@ class RimInfo
   
   def from_s(content)
     attrs = {}
+    # normalize line endings
+    # this way riminfo files will be valid even if line endings are changed
+    content = content.gsub("\r\n", "\n")
     checksum = content[0..39]
     # exclude \n after checksum
     content = content[41..-1]
