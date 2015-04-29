@@ -36,7 +36,7 @@ class SyncHelper < CommandHelper
         if !s.has_branch?(rim_branch) || has_ancestor?(s, branch, s.rev_sha1(rim_branch)) || !has_ancestor?(s, rim_branch, remote_rev)
           s.execute("git branch -f #{rim_branch} #{rev}")
         end
-        branch_sha1 = s.rev_sha1(rim_branch)
+        branch_sha1 = s.rev_sha1(rev)
         remote_url = "file://" + @ws_root
         tmpdir = clone_or_fetch_repository(remote_url, module_tmp_git_path(".ws"))
         RIM::git_session(tmpdir) do |tmp_session|
@@ -105,10 +105,7 @@ private
   def has_ancestor?(session, rev, ancestor)
     # make sure we deal only with sha1s
     rev = session.rev_sha1(rev)
-    while rev && rev != ancestor
-      rev = get_parent(session, rev)
-    end
-    rev != nil
+    return rev == ancestor || session.is_ancestor?(ancestor, rev)
   end
   
   # get first parent node

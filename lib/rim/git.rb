@@ -113,6 +113,13 @@ class GitSession
     end
   end 
 
+  # checks whether the first (ancestor) revision is is ancestor of the second (child) revision
+  def is_ancestor?(ancestor, child)
+    execute("git merge-base --is-ancestor #{ancestor} #{child}") do |b, e|
+      return !e
+    end
+  end
+
   # returns the parent commits of rev as SHA-1s 
   # returns an empty array if there are no parents (e.g. orphan or initial)
   def parent_revs(rev)
