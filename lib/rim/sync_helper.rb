@@ -78,11 +78,13 @@ private
   def get_latest_clean_path_revision(session, rev, remote_rev)
     # make sure we deal only with sha1s
     rev = session.rev_sha1(rev)
+    # get history status (up to last remote revision)
+    status = StatusBuilder.new().rev_history_status(session, rev)
     clean_rev = rev;
-    while rev && rev != remote_rev
-      dirty = StatusBuilder.new().rev_status(session, rev).dirty?
-      rev = get_parent(session, rev)
-      clean_rev = rev if dirty
+    while status
+      dirty = status.dirty?
+      status = !status.parents.empty? ? status.parents[0] : nil  
+      clean_rev = status ? status.git_rev : remote_rev if dirty
     end
     clean_rev
   end
