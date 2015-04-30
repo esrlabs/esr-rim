@@ -16,6 +16,9 @@ class Status < Command
     opts.on("-d", "--detailed", "print detailed status") do
       @detailed = true
     end
+    opts.on("-w", "--working-copy", "print working copy status") do
+      @wc_status = true
+    end
     opts.on("--verify-clean", "exit with error code 1 if commits are dirty") do
       @verify_clean = true
     end
@@ -27,6 +30,10 @@ class Status < Command
     stat = nil
     RIM.git_session(root) do |gs|
       sb = RIM::StatusBuilder.new
+      if @wc_status
+        stat = sb.fs_status(root)
+        print_status(gs, stat)
+      end
       if rev_arg
         if rev_arg =~ /\.\./
           from_rev, to_rev = rev_arg.split("..")
@@ -36,10 +43,6 @@ class Status < Command
         stat = sb.rev_history_status(gs, to_rev, :stop_rev => from_rev)
         print_status(gs, stat)
       else
-        if gs.uncommited_changes?
-          stat = sb.fs_status(root)
-          print_status(gs, stat)
-        end
         branch = gs.current_branch_name
         stat = sb.rev_history_status(gs, branch)
         print_status(gs, stat)
