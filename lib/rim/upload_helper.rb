@@ -19,6 +19,7 @@ class UploadHelper < CommandHelper
       if !branch.start_with?("rim/")
         begin
           sha1 = s.rev_sha1(branch)
+          @logger.info("Uploading modules...")
           upload_modules(get_upload_revisions(s, sha1))
         ensure
           s.execute("git checkout #{branch}")

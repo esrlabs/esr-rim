@@ -69,10 +69,11 @@ def local_changes?(ws_dir, dir=ws_dir)
   stat.lines.all?{|l| l.ignored?}
 end
 
-def clone_or_fetch_repository(remote_url, local_path)
+def clone_or_fetch_repository(remote_url, local_path, clone_log = nil)
   FileUtils.mkdir_p local_path
   RIM::git_session(local_path) do |s|
     if !File.exist?(File.join(local_path, ".git")) || !s.has_valid_remote_repository?()
+      @logger.info(clone_log) if clone_log
       FileHelper.make_empty_dir(local_path)
       s.execute("git clone #{remote_url} .")
     else

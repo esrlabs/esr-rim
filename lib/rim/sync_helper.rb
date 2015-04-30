@@ -31,20 +31,22 @@ class SyncHelper < CommandHelper
       elsif branch.start_with?("rim/")
         raise RimException.new("The current git branch '#{branch}' is a rim integration branch. Please switch to a non rim branch to proceed.")
       else
+        branch_sha1 = s.rev_sha1(rim_branch)
         remote_rev = get_latest_remote_revision(s, branch)
         rev = get_latest_clean_path_revision(s, branch, remote_rev)
         if !s.has_branch?(rim_branch) || has_ancestor?(s, branch, s.rev_sha1(rim_branch)) || !has_ancestor?(s, rim_branch, remote_rev)
           s.execute("git branch -f #{rim_branch} #{rev}")
         end
-        branch_sha1 = s.rev_sha1(rev)
         remote_url = "file://" + @ws_root
-        tmpdir = clone_or_fetch_repository(remote_url, module_tmp_git_path(".ws"))
+        tmpdir = clone_or_fetch_repository(remote_url, module_tmp_git_path(".ws"), "Cloning workspace git...")
         RIM::git_session(tmpdir) do |tmp_session|
-          if tmp_session.rev_sha1(rim_branch)
-            tmp_session.execute("git checkout --detach #{rim_branch}")
-            tmp_session.execute("git branch -D #{rim_branch}")
-          end 
-          tmp_session.execute("git checkout #{rim_branch}")
+          if tmp_session.current_branch() == rim_branch
+            tmp_session.execute("git reset --hard remotes/origin/#{rim_branch}")
+            tmp_session.execute("git clean -xf")
+          else 
+            tmp_session.execute("git checkout #{rim_branch}")
+          end
+          @logger.info("Synchronizing modules...")
           sync_modules(tmp_session, message)
           tmp_session.execute("git push #{remote_url} #{rim_branch}:#{rim_branch}")
         end
