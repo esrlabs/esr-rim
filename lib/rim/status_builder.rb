@@ -17,6 +17,12 @@ class StatusBuilder
   #
   # the leafs of the tree are the stop commits or commits which have no parents
   #
+  # with the :fast option set to true, the leafs in the tree will not be checked
+  # but instead all modules present in those commits will assumed to be clean;
+  # be aware that this assumption might be wrong!
+  # if the leaves of the tree are remote commits, the fast check basically tells
+  # if any of the local commits is dirty or not
+  #
   def rev_history_status(git_session, rev, options={})
     stop_rev = options[:stop_rev]
     relevant_revs = {}
@@ -32,18 +38,12 @@ class StatusBuilder
     end
     # make sure we deal only with sha1s
     rev = git_session.rev_sha1(rev)
-    build_rev_history_status(git_session, rev, relevant_revs)
+    build_rev_history_status(git_session, rev, relevant_revs, {}, :fast => options[:fast])
   end
 
   # status object for single revision +rev+ without status of ancestors
   def rev_status(git_session, rev)
-    out =git_session.execute("git ls-tree -r --name-only #{rev}")
-    mod_dirs = []
-    out.split("\n").each do |l|
-      if File.basename(l) == RimInfo::InfoFileName
-        mod_dirs << File.dirname(l)
-      end
-    end
+    mod_dirs = module_dirs(git_session, rev)
     mod_stats = []
     # export all relevant modules at once
     # this makes status calculation significantly faster compared
@@ -96,7 +96,7 @@ class StatusBuilder
     }
   end
 
-  # fast building of the status of an ancestor chain works by checking
+  # building of the status of an ancestor chain works by checking
   # the dirty state of modules only when any files affecting some module 
   # were changed; otherwise the status of the module in the ancestor is assumed
   #
@@ -104,7 +104,7 @@ class StatusBuilder
   #
   # at the end of the chain, the status must be calculated in the regular "non-fast" way
   #
-  def build_rev_history_status(gs, rev, relevant_revs, status_cache={})
+  def build_rev_history_status(gs, rev, relevant_revs, status_cache={}, options={})
     return status_cache[rev] if status_cache[rev]
     stat = nil
     if relevant_revs[rev]
@@ -112,7 +112,7 @@ class StatusBuilder
       if parent_revs.size > 0
         # build status for all parent nodes
         parent_stats = parent_revs.collect do |p|
-          build_rev_history_status(gs, p, relevant_revs, status_cache)
+          build_rev_history_status(gs, p, relevant_revs, status_cache, options)
         end
 
         # if this is a merge commit with multiple parents
@@ -157,13 +157,51 @@ class StatusBuilder
         stat.parents.concat(parent_stats)
       else
         # no parents, need to do a full check
-        stat = rev_status(gs, rev)
+        if options[:fast]
+          stat = rev_status_fast(gs, rev)
+        else
+          stat = rev_status(gs, rev)
+        end
       end
     else
       # first "non-relevant", do the full check
-      stat = rev_status(gs, rev)
+      if options[:fast]
+        stat = rev_status_fast(gs, rev)
+      else
+        stat = rev_status(gs, rev)
+      end
     end
     status_cache[rev] = stat
+  end
+
+  def module_dirs(gs, rev)
+    mod_dirs = []
+    out = gs.execute("git ls-tree -r --name-only #{rev}")
+    out.split("\n").each do |l|
+      if File.basename(l) == RimInfo::InfoFileName
+        mod_dirs << File.dirname(l)
+      end
+    end
+    mod_dirs
+  end
+
+  # creates a RevStatus object for +rev+ with all modules assumend to be clean
+  def rev_status_fast(git_session, rev)
+    mod_dirs = module_dirs(git_session, rev)
+    mod_stats = []
+    git_session.within_exported_rev(rev, mod_dirs.collect{|d| "#{d}/#{RimInfo::InfoFileName}"}) do |d|
+      mod_dirs.each do |rel_path|
+        RevStatus::ModuleStatus.new(
+          rel_path,
+          RimInfo.from_dir(rel_path),
+          # never dirty
+          false
+        )
+      end
+    end
+    stat = RevStatus.new(mod_stats)
+    stat.git_rev = git_session.rev_sha1(rev)
+    stat
   end
 
 end

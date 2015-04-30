@@ -19,6 +19,9 @@ class Status < Command
     opts.on("-w", "--working-copy", "print working copy status") do
       @wc_status = true
     end
+    opts.on("-f", "--fast", "fast status assuming remote is clean") do
+      @fast = true
+    end
     opts.on("--verify-clean", "exit with error code 1 if commits are dirty") do
       @verify_clean = true
     end
@@ -40,11 +43,11 @@ class Status < Command
         else
           from_rev, to_rev = nil, rev_arg
         end
-        stat = sb.rev_history_status(gs, to_rev, :stop_rev => from_rev)
+        stat = sb.rev_history_status(gs, to_rev, :stop_rev => from_rev, :fast => @fast)
         print_status(gs, stat)
       else
         branch = gs.current_branch_name
-        stat = sb.rev_history_status(gs, branch)
+        stat = sb.rev_history_status(gs, branch, :fast => @fast)
         print_status(gs, stat)
       end
     end
