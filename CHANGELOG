@@ -16,3 +16,11 @@
 * made rim status faster
 * fixed rim exception when project git is renamed
 
+# 1.0.0
+
+* changed checksum calculation, not backward compatible!
+* fixed commits becoming dirty when line ending format changes
+* allow specification of multiple modules on sync and upload
+* fixed sync with create option
+* made printing of working copy status optional
+* major performance improvements
