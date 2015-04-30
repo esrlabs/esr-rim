@@ -155,6 +155,31 @@ def test_ignore_doubleglob
   assert !RIM::DirtyCheck.dirty?(d)
 end
 
+def test_line_ending_change
+  d = empty_test_dir("dirty_check")
+  setup_clean_test_module(d)
+  fn = "#{d}/file1"
+  lines = ["a", "b", "c"]
+  File.open(fn, "wb") do |f|
+    lines.each do |l|
+      f.write("#{l}\n")
+    end
+  end
+  RIM::DirtyCheck.mark_clean(d)
+  File.open(fn, "wb") do |f|
+    lines.each do |l|
+      f.write("#{l}\r\n")
+    end
+  end
+  assert !RIM::DirtyCheck.dirty?(d)
+  File.open(fn, "wb") do |f|
+    lines.each do |l|
+      f.write("#{l}\n")
+    end
+  end
+  assert !RIM::DirtyCheck.dirty?(d)
+end
+
 def teardown
   # clean up test dirs created during last test
   remove_test_dirs

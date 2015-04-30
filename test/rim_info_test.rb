@@ -50,6 +50,24 @@ def test_tamper
   assert_nil ri.remote_url
 end
 
+def test_line_ending_change
+  d = empty_test_dir("rim_info")
+  create_rim_info(d, :remote_url => "ssh://gerrit")
+  # modify
+  fn = d+"/.riminfo"
+  content = nil
+  File.open(fn, "rb") do |f|
+    content = f.read
+  end
+  # unix to windows
+  File.open(fn, "wb") do |f|
+    f.write(content.sub("\n", "\r\n"))
+  end
+  # still valid
+  ri = RIM::RimInfo.from_dir(d)
+  assert_equal "ssh://gerrit", ri.remote_url
+end
+
 def test_attributes
   attrs = {
     :remote_url => "ssh://somehost/dir1/dir2",
