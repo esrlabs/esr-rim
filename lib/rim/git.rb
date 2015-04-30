@@ -158,7 +158,21 @@ class GitSession
   # if +paths+ is given and non-empty, checks out only those parts of the filesystem tree
   # does not remove any files from dir which existed before
   def export_rev(rev, dir, paths=[])
-    execute "git archive --format tar #{rev} #{paths.join(" ")} | tar -x -C #{dir}"
+    paths = paths.dup
+    loop do
+      path_args = ""
+      # max command line length on Windows XP and higher is 8191
+      # consider the following extra characters which will be added:
+      # up to 3 paths in execute, 1 path for tar, max path length 260 = 1040
+      # plus some "glue" characters, plus the last path item with 260 max;
+      # use 6000 to be on the safe side
+      while !paths.empty? && path_args.size < 6000
+        path_args << " "
+        path_args << paths.shift
+      end
+      execute "git archive --format tar #{rev} #{path_args} | tar -x -C #{dir}"
+      break if paths.empty?
+    end
   end
 
   # checks out rev to a temporary directory and yields this directory to the given block
