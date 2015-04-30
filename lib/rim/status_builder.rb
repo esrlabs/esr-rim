@@ -189,11 +189,11 @@ class StatusBuilder
   def rev_status_fast(git_session, rev)
     mod_dirs = module_dirs(git_session, rev)
     mod_stats = []
-    git_session.within_exported_rev(rev, mod_dirs.collect{|d| "#{d}/#{RimInfo::InfoFileName}"}) do |d|
+    git_session.within_exported_rev(rev, mod_dirs.collect{|d| "#{d}/#{RimInfo::InfoFileName}"}) do |temp_dir|
       mod_dirs.each do |rel_path|
-        RevStatus::ModuleStatus.new(
+        mod_stats << RevStatus::ModuleStatus.new(
           rel_path,
-          RimInfo.from_dir(rel_path),
+          RimInfo.from_dir("#{temp_dir}/#{rel_path}"),
           # never dirty
           false
         )

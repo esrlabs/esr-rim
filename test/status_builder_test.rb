@@ -101,13 +101,13 @@ def test_rev_module_status
 
 end
 
-def test_rev_history_status
+def test_rev_history_status(fast=false)
   d = empty_test_dir("rim_info")
 
   RIM.git_session(d) do |s|
     test_git_setup(s, d)
 
-    rs = RIM::StatusBuilder.new.rev_history_status(s, "mod2")
+    rs = RIM::StatusBuilder.new.rev_history_status(s, "mod2", :fast => fast)
     assert_equal 4, all_status_objects(rs).size
 
     assert_equal s.rev_sha1("mod2"), rs.git_rev
@@ -138,7 +138,11 @@ def test_rev_history_status
   end
 end
 
-def test_rev_history_status_until_remote
+def test_rev_history_status_fast
+  test_rev_history_status(true)
+end
+
+def test_rev_history_status_until_remote(fast=false)
   d = empty_test_dir("rim_info")
 
   RIM.git_session(d) do |s|
@@ -147,7 +151,7 @@ def test_rev_history_status_until_remote
     # fake remote branch
     write_file "#{d}/.git/refs/remotes/origin/master", s.rev_sha1('master~1')
 
-    rs = RIM::StatusBuilder.new.rev_history_status(s, "master")
+    rs = RIM::StatusBuilder.new.rev_history_status(s, "master", :fast => fast)
     assert_equal 2, all_status_objects(rs).size
 
     assert_equal 1, rs.parents.size
@@ -164,9 +168,13 @@ def test_rev_history_status_until_remote
   end
 end
 
+def test_rev_history_status_until_remote_fast
+  test_rev_history_status_until_remote(true)
+end
+
 # if the commit we request history for has already been pushed to remote
 # we just return the status for that commit but don't build up any history
-def test_rev_history_status_until_remote_no_local_commit
+def test_rev_history_status_until_remote_no_local_commit(fast=false)
   d = empty_test_dir("rim_info")
 
   RIM.git_session(d) do |s|
@@ -176,23 +184,27 @@ def test_rev_history_status_until_remote_no_local_commit
     write_file "#{d}/.git/refs/remotes/origin/master", s.rev_sha1('master')
 
     # head of remote branch
-    rs = RIM::StatusBuilder.new.rev_history_status(s, "master")
+    rs = RIM::StatusBuilder.new.rev_history_status(s, "master", :fast => fast)
     assert_equal 1, all_status_objects(rs).size
 
     # ancestor of remote branch
-    rs = RIM::StatusBuilder.new.rev_history_status(s, "master~1")
+    rs = RIM::StatusBuilder.new.rev_history_status(s, "master~1", :fast => fast)
     assert_equal 1, all_status_objects(rs).size
   end
 end
 
-def test_rev_history_status_merge_commit
+def test_rev_history_status_until_remote_no_local_commit_fast
+  test_rev_history_status_until_remote_no_local_commit(true)
+end
+
+def test_rev_history_status_merge_commit(fast=false)
   d = empty_test_dir("rim_info")
 
   RIM.git_session(d) do |s|
     test_git_setup(s, d)
     test_git_add_merge_commit(s, d)
 
-    rs = RIM::StatusBuilder.new.rev_history_status(s, "devel")
+    rs = RIM::StatusBuilder.new.rev_history_status(s, "devel", :fast => fast)
     assert_equal 6, all_status_objects(rs).size
 
     assert_equal 2, rs.parents.size
@@ -211,6 +223,10 @@ def test_rev_history_status_merge_commit
   end
 end
 
+def test_rev_history_status_merge_commit_fast
+  test_rev_history_status_merge_commit(true)
+end
+
 #
 #                      o     <- devel
 #                      |\
@@ -222,7 +238,7 @@ end
 #                      |
 #                      o
 #
-def test_rev_history_status_merge_commit_until_remote
+def test_rev_history_status_merge_commit_until_remote(fast=false)
   d = empty_test_dir("rim_info")
 
   RIM.git_session(d) do |s|
@@ -233,9 +249,13 @@ def test_rev_history_status_merge_commit_until_remote
     write_file "#{d}/.git/refs/remotes/origin/master", s.rev_sha1('master~1')
     write_file "#{d}/.git/refs/remotes/origin/devel", s.rev_sha1('devel~1')
 
-    rs = RIM::StatusBuilder.new.rev_history_status(s, "devel")
+    rs = RIM::StatusBuilder.new.rev_history_status(s, "devel", :fast => fast)
     assert_equal 4, all_status_objects(rs).size
   end
+end
+
+def test_rev_history_status_merge_commit_until_remote_fast
+  test_rev_history_status_merge_commit_until_remote(true)
 end
 
 # in this case we only have a remote branch on master but not on devel;
@@ -253,7 +273,7 @@ end
 #                      |
 #                      o
 #
-def test_rev_history_status_merge_commit_bypass_remote_branch
+def test_rev_history_status_merge_commit_bypass_remote_branch(fast=false)
   d = empty_test_dir("rim_info")
 
   RIM.git_session(d) do |s|
@@ -263,9 +283,13 @@ def test_rev_history_status_merge_commit_bypass_remote_branch
     # fake remote branch
     write_file "#{d}/.git/refs/remotes/origin/master", s.rev_sha1('master')
 
-    rs = RIM::StatusBuilder.new.rev_history_status(s, "devel")
+    rs = RIM::StatusBuilder.new.rev_history_status(s, "devel", :fast => fast)
     assert_equal 4, all_status_objects(rs).size
   end
+end
+
+def test_rev_history_status_merge_commit_bypass_remote_branch_fast
+  test_rev_history_status_merge_commit_bypass_remote_branch(true)
 end
 
 #            o <- mod1 deleted
@@ -278,7 +302,7 @@ end
 #            |
 #            o
 #
-def test_rev_history_status_module_removed
+def test_rev_history_status_module_removed(fast=false)
   d = empty_test_dir("rim_info")
 
   RIM.git_session(d) do |s|
@@ -286,12 +310,16 @@ def test_rev_history_status_module_removed
     s.execute "git rm -r mod1"
     s.execute "git commit -m \"removed mod1\""
 
-    rs = RIM::StatusBuilder.new.rev_history_status(s, "master")
+    rs = RIM::StatusBuilder.new.rev_history_status(s, "master", :fast => fast)
     assert_equal 5, all_status_objects(rs).size
 
     assert_equal 1, rs.modules.size
     assert_equal 2, rs.parents.first.modules.size
   end
+end
+
+def test_rev_history_status_module_removed_fast
+  test_rev_history_status_module_removed(true)
 end
 
 #            o <- mod1 made dirty
@@ -304,7 +332,7 @@ end
 #            |
 #            o
 #
-def test_rev_history_status_module_modified_dirty
+def test_rev_history_status_module_modified_dirty(fast=false)
   d = empty_test_dir("rim_info")
 
   RIM.git_session(d) do |s|
@@ -313,7 +341,7 @@ def test_rev_history_status_module_modified_dirty
     s.execute "git add ."
     s.execute "git commit -m \"new file making mod1 dirty\""
 
-    rs = RIM::StatusBuilder.new.rev_history_status(s, "master")
+    rs = RIM::StatusBuilder.new.rev_history_status(s, "master", :fast => fast)
     assert_equal 5, all_status_objects(rs).size
 
     assert_equal 2, rs.modules.size
@@ -322,6 +350,10 @@ def test_rev_history_status_module_modified_dirty
     ms = rs.modules.find{|m| m.dir == "mod2"}
     assert !ms.dirty?
   end
+end
+
+def test_rev_history_status_module_modified_dirty_fast
+  test_rev_history_status_module_modified_dirty(true)
 end
 
 #            o <- mod1 modified but clean
@@ -334,7 +366,7 @@ end
 #            |
 #            o
 #
-def test_rev_history_status_module_modified_clean
+def test_rev_history_status_module_modified_clean(fast=false)
   d = empty_test_dir("rim_info")
 
   RIM.git_session(d) do |s|
@@ -344,7 +376,7 @@ def test_rev_history_status_module_modified_clean
     s.execute "git add ."
     s.execute "git commit -m \"new file making mod1 dirty\""
 
-    rs = RIM::StatusBuilder.new.rev_history_status(s, "master")
+    rs = RIM::StatusBuilder.new.rev_history_status(s, "master", :fast => fast)
     assert_equal 5, all_status_objects(rs).size
 
     assert_equal 2, rs.modules.size
@@ -353,6 +385,10 @@ def test_rev_history_status_module_modified_clean
     ms = rs.modules.find{|m| m.dir == "mod2"}
     assert !ms.dirty?
   end
+end
+
+def test_rev_history_status_module_modified_clean_fast
+  test_rev_history_status_module_modified_clean(true)
 end
 
 def test_status_works_on_bare_repository
