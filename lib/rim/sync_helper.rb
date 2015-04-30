@@ -79,7 +79,7 @@ private
     # make sure we deal only with sha1s
     rev = session.rev_sha1(rev)
     # get history status (up to last remote revision)
-    status = StatusBuilder.new().rev_history_status(session, rev)
+    status = StatusBuilder.new().rev_history_status(session, rev, :fast => true)
     clean_rev = rev;
     while status
       dirty = status.dirty?
