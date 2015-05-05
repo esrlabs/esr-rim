@@ -24,3 +24,8 @@
 * fixed sync with create option
 * made printing of working copy status optional
 * major performance improvements
+
+# 1.0.1
+
+* fixed dirty check to ignore empty directories
+
