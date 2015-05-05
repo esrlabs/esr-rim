@@ -180,6 +180,13 @@ def test_line_ending_change
   assert !RIM::DirtyCheck.dirty?(d)
 end
 
+def test_empty_dir
+  d = empty_test_dir("dirty_check")
+  setup_clean_test_module(d)
+  mkdir "#{d}/emptydir"
+  assert !RIM::DirtyCheck.dirty?(d)
+end
+
 def teardown
   # clean up test dirs created during last test
   remove_test_dirs

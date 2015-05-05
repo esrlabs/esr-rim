@@ -86,10 +86,15 @@ class DirtyCheck
   end
 
   def update_file(sha1, dir, filename)
-    # file name
-    sha1.update(filename)
     fn = dir+"/"+filename
-    unless File.directory?(fn)
+    if File.directory?(fn)
+      if Dir.entries(fn).size > 2 # 2 for . and ..
+        # add directory names but only for non-empty directories
+        sha1.update(filename)
+      end
+    else
+      # file name
+      sha1.update(filename)
       # file contents
       File.open(fn, "rb") do |f|
         sha1.update(f.read.gsub("\r\n", "\n"))
