@@ -1,12 +1,13 @@
 $:.unshift(File.dirname(__FILE__)+"/lib")
 require 'subcommand'
-require 'logger'
+require 'rim/file_logger'
 require 'rim/command/sync'
 require 'rim/command/upload'
 require 'rim/command/status'
 require 'rim/git'
 require 'rim/rim_exception'
 require 'rim/version'
+require 'tmpdir'
 
 include Subcommands
 
@@ -14,7 +15,7 @@ include Subcommands
 # --ignore-removal was added in 1.8.3
 MinimumGitVersion = "1.8.5"
 
-logger = Logger.new($stdout)
+logger = RIM::FileLogger.new($stdout, File.join(Dir.tmpdir, "rim", Time.now().strftime("rim_%Y%m%d-%H%M%S-%L.log")))
 logger.level = Logger::INFO
 logger.formatter = proc do |severity, time, progname, msg|
   if severity == "INFO"
