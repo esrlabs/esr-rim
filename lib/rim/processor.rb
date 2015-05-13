@@ -72,11 +72,12 @@ end
 def clone_or_fetch_repository(remote_url, local_path, clone_log = nil)
   FileUtils.mkdir_p local_path
   RIM::git_session(local_path) do |s|
-    if !File.exist?(File.join(local_path, ".git")) || !s.has_valid_remote_repository?()
+    if !File.exist?(File.join(local_path, ".git"))
       @logger.info(clone_log) if clone_log
       FileHelper.make_empty_dir(local_path)
       s.execute("git clone #{remote_url} .")
     else
+      s.execute("git remote set-url origin #{remote_url}") if !s.has_valid_remote_repository?()
       s.execute("git fetch")
     end
   end
