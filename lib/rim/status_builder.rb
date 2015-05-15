@@ -13,7 +13,12 @@ class StatusBuilder
   # i.e. the parent status objects are the same at this point
   #
   # stops traversing a specific branch when a commit is found which is an ancestor
-  # of :stop_rev or any remote branch if :stop_rev is not provided 
+  # of :stop_rev or any remote branch if :stop_rev is not provided;
+  #
+  # with the :gerrit option, stops traversing on any ancestor of any known commit;
+  # this is necessary since on gerrit there are no "remote" commits;
+  # at the same time, gerrit doesn't "know" commits pushed in the ref-update hook yet
+  # so the status will be built for the new commits pushed in the ref-update hook
   #
   # the leafs of the tree are the stop commits or commits which have no parents
   #
@@ -28,6 +33,11 @@ class StatusBuilder
     relevant_revs = {}
     if stop_rev
       git_session.execute("git rev-list #{rev} \"^#{stop_rev}\"").split("\n").each do |r|
+        relevant_revs[r] = true
+      end
+    elsif options[:gerrit]
+      # in gerrit mode, stop on all known commits
+      git_session.execute("git rev-list #{rev} --not --all --").split("\n").each do |r|
         relevant_revs[r] = true
       end
     else

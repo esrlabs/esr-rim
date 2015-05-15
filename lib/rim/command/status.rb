@@ -12,6 +12,7 @@ class Status < Command
     opts.separator "Without revision arguments checks the current branch and all local ancestors."
     opts.separator "With a single <to-rev> checks that revision and all local ancestors."
     opts.separator "Otherwise checks <to-rev> and ancestors without <from-rev> and ancestors."
+    opts.separator "With the --gerrit option, assumes all yet unknown commits to be 'local'."
     opts.separator ""
     opts.on("-d", "--detailed", "print detailed status") do
       @detailed = true
@@ -24,6 +25,9 @@ class Status < Command
     end
     opts.on("--verify-clean", "exit with error code 1 if commits are dirty") do
       @verify_clean = true
+    end
+    opts.on("--gerrit", "special gerrit mode which stops on all known commits") do
+      @gerrit_mode = true
     end
   end
 
@@ -43,7 +47,7 @@ class Status < Command
         else
           from_rev, to_rev = nil, rev_arg
         end
-        stat = sb.rev_history_status(gs, to_rev, :stop_rev => from_rev, :fast => @fast)
+        stat = sb.rev_history_status(gs, to_rev, :stop_rev => from_rev, :fast => @fast, :gerrit => @gerrit_mode)
         print_status(gs, stat)
       else
         branch = gs.current_branch_name
