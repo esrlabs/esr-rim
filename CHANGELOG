@@ -29,3 +29,12 @@
 
 * fixed dirty check to ignore empty directories
 
+# 1.0.2
+
+* write all logs to temporary file
+
+# 1.1.0
+
+* added --gerrit option, needed for pushing new branchs to gerrit [BS-202]
+* fixed exception on rim sync after moving working copy [BS-248]
+
