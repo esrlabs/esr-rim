@@ -104,8 +104,17 @@ class GitSession
     execute("git show-ref refs/heads/#{branch}") do |b, e|
       return !e
     end
+  end
+  
+  # check whether remote branch exists
+  def has_remote_branch?(branch)
+    out = execute("git ls-remote --heads")
+    out.split("\n").each do |l|
+      return true if l.split(/\s+/)[1] == "refs/heads/#{branch}"
+    end
+    false
   end 
-
+  
   # check whether remote repository is valid
   def has_valid_remote_repository?()
     execute("git ls-remote") do |b, e|

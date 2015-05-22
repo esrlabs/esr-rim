@@ -27,7 +27,11 @@ class UploadModuleHelperTest < Minitest::Test
       write_file(@remote_git_dir, "readme.txt")
       s.execute("git add .")
       s.execute("git commit -m \"Initial commit\"")
-      s.execute("git checkout --detach testbr")
+      s.execute("git checkout -B master")
+      write_file(@remote_git_dir, "readme2.txt")
+      s.execute("git add .")
+      s.execute("git commit -m \"Second commit\"")
+      s.execute("git checkout --detach master")
       @initial_rev = s.rev_sha1("HEAD")
     end
     @ws_dir = File.join(test_dir, "ws")
