@@ -2,7 +2,7 @@ module RIM
 
 module Version
 
-Version = "1.1.1"
+Version = "1.1.2"
 
 end
 
