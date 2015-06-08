@@ -42,8 +42,10 @@ class SyncHelper < CommandHelper
         RIM::git_session(tmpdir) do |tmp_session|
           if tmp_session.current_branch() == rim_branch
             tmp_session.execute("git reset --hard remotes/origin/#{rim_branch}")
-            tmp_session.execute("git clean -xf")
+            tmp_session.execute("git clean -xdf")
           else 
+            tmp_session.execute("git reset --hard")
+            tmp_session.execute("git clean -xdf")
             tmp_session.execute("git checkout #{rim_branch}")
           end
           @logger.info("Synchronizing modules...")
