@@ -114,6 +114,27 @@ class SyncHelperTest < Minitest::Test
       assert !File.exists?(File.join(@ws_dir, "mod1", "existing.txt"))
     end
   end
+  
+  def test_case_change_in_filename_is_synced_correctly
+    mod1_info = create_module_git("mod1")
+    create_ws_git("testbr")
+    cut = RIM::SyncHelper.new(@ws_dir, @logger, [mod1_info])
+    cut.sync
+    remote_path = path_from_module_info(mod1_info)
+    RIM::git_session(remote_path) do |s|
+      FileUtils.mv(File.join(remote_path, "readme.txt"), File.join(remote_path, "readme.tx_"))
+      FileUtils.mv(File.join(remote_path, "readme.tx_"), File.join(remote_path, "Readme.txt"))
+      s.execute("git add --all .")
+      s.execute("git commit -m \"Changed case in filename within mod1\"")
+    end
+    cut.sync
+    RIM::git_session(@ws_dir) do |s|
+      s.execute("git rebase rim/testbr")
+      out = s.execute("git show --name-only")
+      assert out.include?("readme.txt")
+      assert out.include?("Readme.txt")
+    end
+  end
 
 private
   def create_ws_git(branch = "master")

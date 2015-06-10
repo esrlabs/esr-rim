@@ -76,6 +76,7 @@ def clone_or_fetch_repository(remote_url, local_path, clone_log = nil)
       @logger.info(clone_log) if clone_log
       FileHelper.make_empty_dir(local_path)
       s.execute("git clone #{remote_url} .")
+      s.execute("git config core.ignorecase false")
     else
       s.execute("git remote set-url origin #{remote_url}") if !s.has_valid_remote_repository?()
       s.execute("git fetch")
