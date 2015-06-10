@@ -15,7 +15,7 @@ def empty_test_dir(dir)
   # create directory in test folder
   dir = File.dirname(__FILE__)+"/"+dir
   rm_rf(dir)
-  mkdir(dir)
+  mkdir_p(dir)
   @test_dirs ||= []
   @test_dirs << dir
   dir

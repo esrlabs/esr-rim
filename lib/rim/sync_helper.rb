@@ -68,11 +68,8 @@ private
     @module_infos.each do |module_info|
       module_helpers.push(SyncModuleHelper.new(session.execute_dir, @ws_root, module_info, @logger))
     end
-    each_module_parallel("sync'ing", module_helpers) do |m|
-      m.sync
-    end
     module_helpers.each do |m|
-      m.commit(message)
+      m.sync(message)
     end
   end
 

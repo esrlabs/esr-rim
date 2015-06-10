@@ -12,53 +12,57 @@ module RIM
     end
 
     # do the local sync without committing
-    def sync
+    def sync(message = nil)
       fetch_module
-      export_module
-    end
-
-    def commit(message = nil)
-      RIM::git_session(@dest_root) do |s|
-        if needs_commit?(s)
-          msg_file = Tempfile.new('message')
-          begin
-            if message
-              msg_file << message
-            else
-              msg_file << "rim sync: module #{@module_info.local_path}"
-            end
-            msg_file.close
-            # add before commit because the path can be below a not yet added path
-            s.execute("git add --ignore-removal #{@module_info.local_path}")
-            s.execute("git commit #{@module_info.local_path} -F #{msg_file.path}")
-          ensure
-            msg_file.close(true)
-          end
-        end
-      end
+      export_module(message)
     end
 
     private
 
     # export +revision+ of +mod+ into working copy
     # BEWARE: any changes to the working copy target dir will be lost!
-    def export_module
-      git_path = module_git_path(@remote_path)
-      RIM::git_session(git_path) do |s|
-        if !s.rev_sha1(@module_info.target_revision)
-          raise RimException.new("Unknown target revision '#{@module_info.target_revision}' for module '#{@module_info.local_path}'.")
+    def export_module(message)
+      RIM::git_session(@dest_root) do |d|
+        start_sha1 = d.rev_sha1("HEAD")
+        git_path = module_git_path(@remote_path)
+        RIM::git_session(git_path) do |s|
+          if !s.rev_sha1(@module_info.target_revision)
+            raise RimException.new("Unknown target revision '#{@module_info.target_revision}' for module '#{@module_info.local_path}'.")
+          end
+          local_path = File.join(@dest_root, @module_info.local_path)
+          prepare_empty_folder(local_path, @module_info.ignores)
+          temp_commit(d, "clear directory") if d.uncommited_changes?
+          s.execute("git archive --format tar #{@module_info.target_revision} | tar -x -C #{local_path}")
+          sha1 = s.execute("git rev-parse #{@module_info.target_revision}").strip
+          @rim_info = RimInfo.new
+          @rim_info.remote_url = @module_info.remote_url
+          @rim_info.target_revision = @module_info.target_revision
+          @rim_info.revision_sha1 = sha1
+          @rim_info.ignores = @module_info.ignores.join(",")
+          @rim_info.to_dir(local_path)
+          DirtyCheck.mark_clean(local_path)
         end
-        local_path = File.join(@dest_root, @module_info.local_path)
-        prepare_empty_folder(local_path, @module_info.ignores)
-        s.execute("git archive --format tar #{@module_info.target_revision} | tar -x -C #{local_path}")
-        sha1 = s.execute("git rev-parse #{@module_info.target_revision}").strip
-        @rim_info = RimInfo.new
-        @rim_info.remote_url = @module_info.remote_url
-        @rim_info.target_revision = @module_info.target_revision
-        @rim_info.revision_sha1 = sha1
-        @rim_info.ignores = @module_info.ignores.join(",")
-        @rim_info.to_dir(local_path)
-        DirtyCheck.mark_clean(local_path)
+        temp_commit(d, "commit changes") if needs_commit?(d)
+        d.execute("git reset --soft #{start_sha1}")
+        commit(message) if d.uncommited_changes?
+      end
+    end
+
+    def commit(message)
+      RIM::git_session(@dest_root) do |s|
+        msg_file = Tempfile.new('message')
+        begin
+          if message
+            msg_file << message
+          else
+            msg_file << "rim sync: module #{@module_info.local_path}"
+          end
+          msg_file.close
+          s.execute("git add --all")
+          s.execute("git commit -F #{msg_file.path}")
+        ensure
+          msg_file.close(true)
+        end
       end
     end
 
@@ -67,7 +71,7 @@ module RIM
       stat = session.status(@module_info.local_path)
       ignored = stat.lines.select{ |l| l.ignored? }
       if ignored.empty?
-        session.execute("git add --ignore-removal #{@module_info.local_path}") do |out, e|
+        session.execute("git add --all #{@module_info.local_path}") do |out, e|
           ignored = parse_ignored_files(session, out, e)
         end
         if ignored.empty?
@@ -82,7 +86,12 @@ module RIM
         end
         raise RimException.new(messages)
       end
-      stat.lines.any?      
+      stat.lines.any?
+    end
+
+    def temp_commit(session, message)
+      session.execute("git add --all")
+      session.execute("git commit -m \"#{message}\" --")
     end
 
     def parse_ignored_files(session, out, e)

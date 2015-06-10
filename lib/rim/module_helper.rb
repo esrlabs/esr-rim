@@ -28,7 +28,6 @@ protected
         s.execute("git clone --mirror #{@remote_url} #{git_path}") do |out, e|
           raise RimException.new("Remote repository '#{@remote_url}' of module '#{@module_info.local_path}' not found.") if e
         end
-        s.execute("git config core.ignorecase false")
       else
         s.execute("git remote update")
       end

@@ -123,6 +123,8 @@ class SyncHelperTest < Minitest::Test
     remote_path = path_from_module_info(mod1_info)
     RIM::git_session(remote_path) do |s|
       FileUtils.mv(File.join(remote_path, "readme.txt"), File.join(remote_path, "readme.tx_"))
+      s.execute("git add --all .")
+      s.execute("git commit -m \"Temporary change of filename within mod1\"")
       FileUtils.mv(File.join(remote_path, "readme.tx_"), File.join(remote_path, "Readme.txt"))
       s.execute("git add --all .")
       s.execute("git commit -m \"Changed case in filename within mod1\"")

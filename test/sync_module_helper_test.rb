@@ -70,7 +70,6 @@ class SyncModuleHelperTest < Minitest::Test
     info = RIM::ModuleInfo.new(@remote_git_dir, "test", "testbr")
     cut = RIM::SyncModuleHelper.new(@ws_dir, @ws_dir, info, @logger)
     cut.sync
-    cut.commit
     RIM::git_session(@ws_dir) do |s|
       out = s.execute("git log HEAD~1..HEAD")
       assert out.include?("rim sync: module")
@@ -80,8 +79,7 @@ class SyncModuleHelperTest < Minitest::Test
   def test_commit_message_can_be_changed
     info = RIM::ModuleInfo.new(@remote_git_dir, "test", "testbr")
     cut = RIM::SyncModuleHelper.new(@ws_dir, @ws_dir, info, @logger)
-    cut.sync
-    cut.commit("This is the commit header.")
+    cut.sync("This is the commit header.")
     RIM::git_session(@ws_dir) do |s|
       out = s.execute("git log HEAD~1..HEAD")
       assert out.include?("This is the commit header.\n")
