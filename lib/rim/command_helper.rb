@@ -89,8 +89,8 @@ class CommandHelper < Processor
   end
 
   def get_remote_branch_format(remote_url)
-    #get_absolute_remote_url(remote_url).start_with?(GerritServer) ? "refs/for/%s" : nil
-    "refs/for/%s"
+    get_absolute_remote_url(remote_url).start_with?(GerritServer) ? "refs/for/%s" : nil
+    #"refs/for/%s"
   end
 
   def find_file_dir_in_workspace(start_dir, file)

@@ -9,8 +9,9 @@ module RIM
 
 class UploadModuleHelper < ModuleHelper
 
-  def initialize(workspace_root, module_info, logger)
+  def initialize(workspace_root, module_info, review, logger)
     super(workspace_root, module_info, logger)
+    @review = review
   end
 
   # do the module uploads for revisions given by sha
@@ -48,7 +49,7 @@ private
       end
       # Finally we're done. Push the changes
       if local_branch && dest.rev_sha1(local_branch) != infos.parent_sha1  
-        push_branch = @module_info.remote_branch_format && !@module_info.remote_branch_format.empty? \
+        push_branch = @review && @module_info.remote_branch_format && !@module_info.remote_branch_format.empty? \
             ? @module_info.remote_branch_format % remote_branch : remote_branch
         dest.execute("git push #{@remote_url} #{local_branch}:#{push_branch}")
         dest.execute("git checkout --detach #{local_branch}")

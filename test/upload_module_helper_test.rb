@@ -73,7 +73,7 @@ class UploadModuleHelperTest < Minitest::Test
       revs.push(s.rev_sha1("HEAD"))
     end
     info = RIM::ModuleInfo.new("file://" + @remote_git_dir, "module", "testbr")
-    cut = RIM::UploadModuleHelper.new(@ws_dir, info, @logger)
+    cut = RIM::UploadModuleHelper.new(@ws_dir, info, true, @logger)
     cut.upload(nil, revs)
     RIM::git_session(@remote_git_dir) do |s|
       s.execute("git checkout testbr")

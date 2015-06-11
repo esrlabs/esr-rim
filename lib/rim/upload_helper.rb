@@ -5,8 +5,9 @@ module RIM
 
 class UploadHelper < CommandHelper
 
-  def initialize(workspace_root, logger, module_infos = nil)
+  def initialize(workspace_root, review, logger, module_infos = nil)
     @module_helpers = []
+    @review = review
     super(workspace_root, logger, module_infos)
   end
 
@@ -32,7 +33,7 @@ class UploadHelper < CommandHelper
 
   # called to add a module info
   def add_module_info(module_info)
-    @module_helpers.push(UploadModuleHelper.new(@ws_root, module_info, @logger))
+    @module_helpers.push(UploadModuleHelper.new(@ws_root, module_info, @review, @logger))
   end
   
 private
