@@ -196,6 +196,18 @@ class GitSession
       # mktmpdir returns value return by our block
       yield c
       FileUtils.rm_rf(c)
+      # retry to delete if it hasn't been deleted yet
+      # this could be due to Windows keeping the files locked for some time
+      # this is especially a problem if the machine is at its limits
+      retries = 600
+      while File.exist?(c) && retries > 0
+        sleep(0.1)
+        FileUtils.rm_rf(c)
+        retries -= 1
+      end
+      if File.exist?(c)
+        @logger.warn "could not delete temp dir: #{c}"
+      end
     end
   end
     
