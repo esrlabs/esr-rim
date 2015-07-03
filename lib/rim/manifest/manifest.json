@@ -1,0 +1,7 @@
+{
+    "fetch_url" :   "ssh://gerrit",
+    "dependencies" : [
+        { "unit":"nvStorage", "version": "1.1", "destination": "./bsw/nvStorage","remote_path":"bsw/modules/nvStorage"},
+        {"unit":"eepromManager", "version": "1.0", "destination": "./bsw/eeprom","remote_path":"bsw/modules/eepromManager"}
+    ]
+}

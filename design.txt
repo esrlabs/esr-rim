@@ -1,0 +1,104 @@
+# Terms
+* Project:       a set of modules plus project specific code
+* Project Git:   a single git repository which contains all code belonging to the project (including the code from modules)
+* Module:        a unit of code which can be added to a project individually
+* Module Git:    git repository holding a module
+* Module Dir:    directory in the project workspace where the module is located
+* .riminfo File: file contained in a Module Dir holding rim specific information
+* .rim Dir:      directory in a project root dir holding rim specific information
+
+# Design Goals
+* For every commit in the project git and every module dir present in that commit:
+  - it must be clear where the module dir content came from (url, revision) 
+  - the content must be unchanged compared to the original source
+
+# About Manifests
+* there is no central manifest
+  RATIONALE: 
+  - all the relevant information is stored in .riminfo files in the module dirs and the manifest would only duplicate this information and could get out of sync
+  - it's very hard to make sure the manifest is in sync
+* external modules are installed into the project git
+* a manifest file could still be used for initial setups
+* instead run the rim status command to get the most up-to-date information
+* there could be a rim command to edit "manifest" content based on a temporary manifest file
+
+# Module Installation
+* remote modules are installed into the project git by copying a certain revision into a certain directory (module dir)
+* for each installed module there is a .riminfo file within the module dir
+
+# Module Dirty State
+* an installed module is dirty if the files in the module dir are inconsistent with the files in the module git of the commit stated in the .riminfo file
+* there is a checksum in the .riminfo file which allows to verify consistency without consulting the module git
+* when a module is installed, rim makes sure that the state after installation is consistent and "signs off" with the checksum (mark as clean)
+* the checksum includes information of all file names and file contents, as well as information in the .riminfo file 
+
+# RIM Ignores
+* each installed module can defined files to be ignored during certain rim operations
+* information about ignored files is not checked into the module git but only into the project git
+  RATIONALE: 
+  - the fact that project specific additional files, e.g. CMakeLists.txt files, should be ignored should not be part of the module
+  - otherwise the module would have to be updated if more files should be ignored
+* ignored files are ignored when calculating the dirty state; this means that changes in ignored files can never make a module dirty
+* files which exist in a module git can't be ignored
+  RATIONALE:
+  - otherwise users might overwrite files with project specific versions and thus circumvent the dirty state check
+* information about which files are ignored is stored in the .riminfo file
+  RATIONALE:
+  - there are certain restrictions on what files can be ignored
+  - by putting this info into the .riminfo file, rim has full control over these settings and could disallow certain user changes
+
+# .riminfo consistency check
+* .riminfo files have a built in checksum which verifies their consistency
+* .riminfo files can't be edited by a user directly
+* if changed by a user directly, the files become invalid
+  RATIONALE:
+  - rim has full control over what settings are written to the riminfo file
+  - for example it can enforce certain restrictions on how ignored files are specified
+
+# Commit Consistency Checks
+* commits must only be pushed into a non-local git repository if there are no modules in dirty state
+  RATIONALE: 
+  - when someone looks at commits in the history, the .riminfo files must provide reliable information about where the module's content came from; it the module is dirty, this is not the case
+  - only "official" commit of the module git must be incorporated into the central (server) project git
+* consistency checks should run in all local gits in pre-push hooks
+* consistency checks should run in the central project git on the server
+
+# Upload Strategy
+* commits for module gits are created starting from the oldest "dirty" commit affecting a module
+* the base revision for a series of module uploads is the revision stated in the .riminfo found in the last "clean" state
+* upload assumes that the base revision is the head of the upstream branch of a module git, otherwise the user is asked to sync first (operation is aborted)
+* the upstream branch (branch of the module git on which to upload) is taken from the .riminfo file
+* rim keeps a local copy of each module git in the .rim folder
+* rim checks out a temporary local branch in the local module git starting at the base revision
+* rim copys module dir contents into the working copy of the local module gits and commits the changes
+* rim marks the newly created commits with tags containing the (first chars of the) sha1 of the project git commits they were created from
+* when repeating an upload operation, rim looks for marker tags which match parent commits in the project git and stops searching for the base revision once it finds such a tag
+* this way a repeated upload operation does not recreated commits in the module git which already exist (and might have been uploaded for review)
+* only if the user rebases or otherwise modifies local commits in the project git so they get a new sha1, the upload operation will create new commits in the module git
+* this can be used in order to edit uploaded commits
+* the gerrit change id can be used as usual: the pre commit hook adds the change id to the commits in the project git
+* when derived module git commits are uploaded to gerrit, it can use the change ids as usual
+* if the user rewrites commits in the project git and pushes them again, the change id stay intact (given that the users does the rewrite properly) and this allows gerrit to properly associate new versions of previous changes
+
+# RIM Commands
+
+## RIM Status Command
+* the RIM status command shows all installed modules:
+  - the source URL
+  - the current branch or tag
+  - the current commit (sha1)
+  - dirty state
+* basically this command can output all of the information found in a repo manifest
+
+## RIM Sync Command
+* update of one ore more existing module(s)
+* if there is branch information in the .riminfo file ("upstream"), the latest revision of that branch will be used
+* the command might prompt the user with (release) tags to which they could update
+* it's very important to note that selective update only some modules must be possilbe
+  RATIONALE:
+  - integration of modules may be done by module owners who only want to update "their" modules, not the modules of others
+* there could be an "install" command for installing new mdoules but it would be a special case of the sync command
+
+## RIM Upload Command
+* splits commits form the project git into commits for the affected module gits and pushes them to the server copy of the module gits
+* the command should optionally support upload for gerrit review
