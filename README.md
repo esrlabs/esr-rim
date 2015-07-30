@@ -30,12 +30,7 @@ When RIM has synchronized a specific version of a library module into your proje
 
 ## Installation
 
-Install RIM via the gem package mechanism. The RIM gem is hosted on our internal gem server (http://gemserver:9292).
-In order to install it, make sure you have the internal gem server added to the sources used by the gem tool:
-
-    > gem sources -a http://gemserver:9292
-
-The install or update the gem.
+Install and update RIM via the gem package mechanism:
 
     > gem install esr-rim
 
