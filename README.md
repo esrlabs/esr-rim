@@ -14,9 +14,9 @@ When RIM has synchronized a specific version of a library module into your proje
 ## Use Cases
 
 * Check the status of your local commits (dirty or clean), which lists dirty modules just in case  (rim status -d)
-* Add a new BSW module to your project git (rim sync -c)
-* Upgrade an existing BSW module (rim sync)
-* Upload modifications of a BSW module (rim upload)
+* Add a new library module to your project git (rim sync -c)
+* Upgrade an existing library module (rim sync)
+* Upload modifications of a library module (rim upload)
 
 ## Terms
 
@@ -52,7 +52,7 @@ Don't add the .riminfo file the to project's .gitignore. It is an essential part
 
 ## Synchronize your project git with a module git
 
-Whenever you decide to use rim to synchronize the content of a BSW module with your project Git you have to do an initial synchronization step:
+Whenever you decide to use rim to synchronize the content of a library module with your project Git you have to do an initial synchronization step:
 
     > rim sync -c -u <gerrit path> -r <branch or tag> -m <message header> -i <ignore patterns> <local directory>
 
@@ -66,9 +66,9 @@ which actually means the following:
 
 ### Example:
 
-    > rim sync -c -u bsw/modules/bmw/bad/bacAuth -r master -m "ZSGSWBK-11223/ThHe: integrated bacAuth module" -i CMakeLists.txt bacAuth
+    > rim sync -c -u libraries/modules/projectA -r master -m "PROJ-123/ThHe: integrated projectA module" -i CMakeLists.txt projectA
 
-lets rim synchronize the state of branch master from the remote repository ssh://gerrit/bsw/modules/bmw/bac/bacAuth into the relative folder bacAuth and won't touch files named CMakeLists.txt that are already within this folder. The corresponding commit message header will be "ZSGSWBK-11223/ThHe: integrated bacAuth module"
+lets rim synchronize the state of branch master from the remote repository `ssh://gerrit/libraries/modules/projectA` into the relative folder projectA and won't touch files named CMakeLists.txt that are already within this folder. The corresponding commit message header will be "PROJ-123/ThHe: integrated projectA module"
 
 ## The magic rim integration branch
 
@@ -104,19 +104,19 @@ The -i option allows you only to replace the ignore list completely. So to appen
 
 ### Example:
 
-    > rim sync -r release_1.1.2 bacAuth
+    > rim sync -r release_1.1.2 projectA
 
 lets rim commit the content of the tag or branch release_1.1.2 (same repository, same ignore patterns, automatically created commit message) to the integration branch.
 
 ## Modify and commit files in a Module Directory
 
-If you're owner of a BSW module and thus are authorized to do changes in the module's sources rim supports you in doing that from within your Project Git: whenever you have the need of modifying files in a module directory you can do that in your project directory. Make your changes as needed and commit them to your local project repository.
+If you're owner of a library module and thus are authorized to do changes in the module's sources rim supports you in doing that from within your Project Git: whenever you have the need of modifying files in a module directory you can do that in your project directory. Make your changes as needed and commit them to your local project repository.
 
-*You cannot simply push the changes to the remote repository. The remote server will reject your direct push because module folders are touched and thus got "dirty". This behaviour ensures that no unintended modifications of BSW modules can creep into your project code.*
+*You cannot simply push the changes to the remote repository. The remote server will reject your direct push because module folders are touched and thus got "dirty". This behaviour ensures that no unintended modifications of library modules can creep into your project code.*
 
-So if you're not allowed to commit changes to a BSW module: reset your branch to a clean rim status, otherwise you will never be able to push anything again.
+So if you're not allowed to commit changes to a library module: reset your branch to a clean rim status, otherwise you will never be able to push anything again.
 
-### But how can a module owner get the local changes to the BSW module Git?
+### But how can a module owner get the local changes to the library module Git?
 
 Supposed you are authorized and you now want to publish your module changes (i.e. push them to the remote project repository) the way is as follows:
 
@@ -124,7 +124,7 @@ Supposed you are authorized and you now want to publish your module changes (i.e
 2. As soon as the review is successful and the modifications are applied to your module Git you use rim sync to resynchronize the changes into your local repository again – after the rebase and if you did no further changes your module is "clean" again.
 3. Now that the module has reached a clean rim status you can commit your change to the remote project repository.
 
-In the next sections we will have a more detailled look on integrating changes to BSW modules.
+In the next sections we will have a more detailled look on integrating changes to library modules.
 
 ### Prepare your repository for work
 
@@ -148,7 +148,7 @@ or
 
 ### Upload to the review branch
 
-To track the quality of module changes all modifications to a BSW module have to be reviewed (using Gerrit). So similar to the workflow with repo all changes are first committed to the corresponding review branch. rim helps you in forwarding your module changes to Gerrit:
+To track the quality of module changes all modifications to a library module have to be reviewed (using Gerrit). So similar to the workflow with repo all changes are first committed to the corresponding review branch. rim helps you in forwarding your module changes to Gerrit:
 
     > rim upload <local directory>
 
