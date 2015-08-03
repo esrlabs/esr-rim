@@ -43,8 +43,6 @@ Before using rim add the pattern
 
 to your project's `.gitignore` and commit this change.
 
-Don't add the .riminfo file the to project's .gitignore. It is an essential part of the project git which allows rim to track project specific information.
-
 ## Synchronize your project git with a module git
 
 Whenever you decide to use rim to synchronize the content of a library module with your project Git you have to do an initial synchronization step:
