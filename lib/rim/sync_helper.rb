@@ -19,7 +19,7 @@ class SyncHelper < CommandHelper
   end
 
   # sync all module changes into rim branch
-  def sync(message = nil)
+  def sync(message = nil, rebase = nil)
     # get the name of the current workspace branch
     RIM::git_session(@ws_root) do |s|
       branch = s.current_branch
@@ -53,7 +53,12 @@ class SyncHelper < CommandHelper
         end
       end
       if s.rev_sha1(rim_branch) != branch_sha1
-        @logger.info("Changes have been commited to branch #{rim_branch}. Rebase to apply changes to workspace.")
+        if rebase
+          s.execute("git rebase #{rim_branch}")
+          @logger.info("Changes have been commited to branch #{rim_branch} and workspace has been rebased successfully.")
+        else
+          @logger.info("Changes have been commited to branch #{rim_branch}. Rebase to apply changes to workspace.")
+        end
       else
         @logger.info("No changes.")
       end

@@ -38,6 +38,9 @@ class Sync < Command
     opts.on("-m", "--message MESSAGE", String, "Message header to provide to each commit.") do |message|
       @message = message
     end
+    opts.on("-b", "--rebase", "Rebase after successful sync.") do
+      @rebase = true
+    end
   end
 
   def invoke()
@@ -58,7 +61,7 @@ class Sync < Command
       helper.modules_from_paths(ARGV, @module_options)
     end
     helper.check_arguments
-    helper.sync(@message)
+    helper.sync(@message, @rebase)
   end
 
 end
