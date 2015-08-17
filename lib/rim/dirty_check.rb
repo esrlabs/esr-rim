@@ -47,7 +47,7 @@ class DirtyCheck
   def self.dirty?(dir)
     mi = RimInfo.from_dir(dir)
     # always fails if there is no checksum
-    !mi.checksum || mi.checksum != self.new.calc_checksum(mi, dir)
+    mi.dirty? || !mi.checksum || mi.checksum != self.new.calc_checksum(mi, dir)
   end
 
   # returns nil if checksum can't be calculated due to missing info

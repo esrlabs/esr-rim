@@ -32,7 +32,7 @@ class CommandHelper < Processor
   end
 
   def create_module_info(remote_url, local_path, target_revision, ignores)
-    ModuleInfo.new(remote_url, get_relative_path(local_path), target_revision, ignores, get_remote_branch_format(remote_url))
+    ModuleInfo.new(remote_url, get_relative_path(local_path), target_revision, ignores, remote_url ? get_remote_branch_format(remote_url) : nil)
   end
 
   def modules_from_manifest(path)
@@ -59,10 +59,15 @@ class CommandHelper < Processor
     module_path = find_file_dir_in_workspace(path || ".", RimInfo::InfoFileName)
     if module_path
       rim_info = RimInfo.from_dir(module_path)
-      add_unique_module_info(create_module_info(opts.has_key?(:remote_url) ? opts[:remote_url] : rim_info.remote_url, \
+      module_info = create_module_info(opts.has_key?(:remote_url) ? opts[:remote_url] : rim_info.remote_url, \
           module_path, opts.has_key?(:target_revision) ? opts[:target_revision] : rim_info.target_revision, \
-          opts.has_key?(:ignores) ? opts[:ignores] : rim_info.ignores))
-      module_path
+          opts.has_key?(:ignores) ? opts[:ignores] : rim_info.ignores)
+      if module_info.valid?
+        add_unique_module_info(module_info)
+        module_path
+      else
+        raise RimException.new("Invalid .riminfo file found in directory '#{module_path}'.")
+      end
     else
       raise RimException.new(path ? "No module info found in '#{path}'." : "No module info found.") 
     end

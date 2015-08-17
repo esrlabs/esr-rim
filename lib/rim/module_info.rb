@@ -25,6 +25,11 @@ class ModuleInfo
       @ignores = ignores || []
     end
   end
+  
+  def valid?
+    return @remote_url && @local_path && @target_revision
+  end
+  
 end
 
 end

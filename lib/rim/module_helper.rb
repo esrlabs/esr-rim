@@ -11,8 +11,8 @@ class ModuleHelper < Processor
   def initialize(workspace_root, module_info, logger)
     super(workspace_root, logger)
     @module_info = module_info
-    @remote_url = get_absolute_remote_url(@module_info.remote_url)
-    @remote_path = remote_path(@module_info.remote_url)
+    @remote_url = get_absolute_remote_url(@module_info.remote_url) if @module_info.remote_url
+    @remote_path = remote_path(@module_info.remote_url) if @module_info.remote_url
     @logger = logger
   end
   

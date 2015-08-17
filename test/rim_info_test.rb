@@ -32,6 +32,7 @@ def test_read
   d = empty_test_dir("rim_info")
   create_rim_info(d, :remote_url => "ssh://gerrit")
   ri = RIM::RimInfo.from_dir(d)
+  assert !ri.dirty?
   assert_equal "ssh://gerrit", ri.remote_url
 end
 
@@ -47,7 +48,7 @@ def test_tamper
   end
   # after
   ri = RIM::RimInfo.from_dir(d)
-  assert_nil ri.remote_url
+  assert ri.dirty?
 end
 
 def test_line_ending_change
@@ -65,6 +66,7 @@ def test_line_ending_change
   end
   # still valid
   ri = RIM::RimInfo.from_dir(d)
+  assert !ri.dirty?
   assert_equal "ssh://gerrit", ri.remote_url
 end
 

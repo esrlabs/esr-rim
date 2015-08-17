@@ -51,7 +51,11 @@ class RimInfo
     mi.from_s(content)
     mi
   end
-  
+
+  def dirty?
+    @dirty
+  end
+
   def from_s(content)
     attrs = {}
     # normalize line endings
@@ -60,7 +64,7 @@ class RimInfo
     checksum = content[0..39]
     # exclude \n after checksum
     content = content[41..-1]
-    if content && checksum == calc_sha1(content)
+    if content
       content.split("\n").each do |l|
         col = l.index(":")
         if col
@@ -70,13 +74,11 @@ class RimInfo
           end
         end
       end
-    else
-      # checksum error, ignore content
-      # TODO: output user warning
     end
     AttrsDef.each do |a|
       send("#{a}=".to_sym, attrs[a])
     end
+    @dirty = checksum != calc_sha1(content)
   end
 
   def from_dir(dir)
