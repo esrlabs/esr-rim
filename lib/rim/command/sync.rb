@@ -41,6 +41,12 @@ class Sync < Command
     opts.on("-b", "--rebase", "Rebase after successful sync.") do
       @rebase = true
     end
+    opts.on("-a", "--all", "Collects all modules from the specified paths.") do
+      @all = true
+    end
+    opts.on("-e", "--exclude [PATTERN_LIST]", String, "Exclude all modules in the comma separated list of directories from sync when using -a option.") do |dirlist|
+      @excludedirs = dirlist.split(",")
+    end
   end
 
   def invoke()
@@ -58,7 +64,7 @@ class Sync < Command
             @module_options[:ignores]))
       end 
     else
-      helper.modules_from_paths(ARGV, @module_options)
+      helper.modules_from_paths(@all ? helper.module_paths(ARGV, @excludedirs) : ARGV, @module_options)
     end
     helper.check_arguments
     helper.sync(@message, @rebase)

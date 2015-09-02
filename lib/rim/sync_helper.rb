@@ -47,7 +47,6 @@ class SyncHelper < CommandHelper
             tmp_session.execute("git clean -xdf")
             tmp_session.execute("git checkout #{rim_branch}")
           end
-          @logger.info("Synchronizing modules...")
           sync_modules(tmp_session, message)
           tmp_session.execute("git push #{remote_url} #{rim_branch}:#{rim_branch}")
         end
@@ -73,6 +72,7 @@ private
       module_helpers.push(SyncModuleHelper.new(session.execute_dir, @ws_root, module_info, @logger))
     end
     module_helpers.each do |m|
+      @logger.info("Synchronizing #{m.module_info.local_path}...")
       m.sync(message)
     end
   end

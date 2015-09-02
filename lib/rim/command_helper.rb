@@ -4,6 +4,7 @@ require 'rim/module_info'
 require 'rim/rim_info'
 require 'rim/manifest/json_reader'
 require 'rim/status_builder'
+require 'pathname'
 
 module RIM
 
@@ -46,12 +47,12 @@ class CommandHelper < Processor
   def modules_from_paths(paths, opts = {})
     if paths.empty?
       module_from_path(nil, opts)
-    elsif paths.length == 1 || opts.empty?
+    elsif paths.length == 1 || !opts.has_key?(:remote_url)
       while !paths.empty?
         module_from_path(paths.shift, opts)
       end
     else
-      raise RimException.new("Multiple modules cannot be used with additional options.")
+      raise RimException.new("Multiple modules cannot be used with URL option.")
     end
   end
   
@@ -73,17 +74,26 @@ class CommandHelper < Processor
     end
   end
   
-  def modules_from_workspace()
-    if File.directory?(File.join(@ws_root, ".rim"))
-      status = StatusBuilder.new.fs_status(@ws_root)
-      status.modules.each do |mod|
-        rim_info = mod.rim_info
-        add_unique_module_info(ModuleInfo.new(rim_info.remote_url, mod.dir, rim_info.upstream, rim_info.ignores))
-      end
-      true
+  def module_paths(paths, exclude_paths = nil)
+    module_paths = []
+    (paths.empty? ? ['.'] : paths).each do |p|
+      module_paths.concat(all_module_paths_from_path(p))
     end
+    paths.clear
+    if exclude_paths
+      exclude_paths.each do |e|
+        all_module_paths_from_path(e).each do |p|
+          module_paths.delete(p)
+        end
+      end
+    end
+    module_paths.sort
   end
-
+  
+  def all_module_paths_from_path(path)
+    Dir.glob(File.join(path, "**/.riminfo")).map { |f| Pathname.new(File.expand_path(File.dirname(f))).relative_path_from(Pathname.pwd).to_s }
+  end
+  
   def add_unique_module_info(module_info)
     if !@paths.include?(module_info.local_path)
       @paths.push(module_info.local_path)

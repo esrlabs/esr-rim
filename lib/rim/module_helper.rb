@@ -8,6 +8,8 @@ module RIM
 
 class ModuleHelper < Processor
 
+  attr_reader :module_info
+
   def initialize(workspace_root, module_info, logger)
     super(workspace_root, logger)
     @module_info = module_info
