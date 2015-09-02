@@ -24,6 +24,12 @@ class Sync < Command
                               "Specify the remote URL and the target revision with the options.") do
       @create = true
     end
+    opts.on("-a", "--all", "Collects all modules from the specified paths.") do
+      @all = true
+    end
+    opts.on("-e", "--exclude=[PATTERN_LIST]", String, "Exclude all modules of a comma separated list of directories when using sync with -a option.") do |dirlist|
+      @excludedirs = dirlist.split(",")
+    end
     @module_options = {}
     opts.on("-u", "--remote-url URL", String, "Set the remote URL of the module.", \
                                               "A relative path will be applied to ssh://gerrit/") do |url|
@@ -32,20 +38,17 @@ class Sync < Command
     opts.on("-r", "--target-revision REVISION", String, "Set the target revision of the module.") do |target_revision|
       @module_options[:target_revision] = target_revision
     end
-    opts.on("-i", "--ignore [PATTERN_LIST]", String, "Set the ignore patterns by specifying a comma separated list.") do |ignores|
+    opts.on("-i", "--ignore=[PATTERN_LIST]", String, "Set the ignore patterns by specifying a comma separated list.") do |ignores|
       @module_options[:ignores] = ignores || ""
     end
     opts.on("-m", "--message MESSAGE", String, "Message header to provide to each commit.") do |message|
       @message = message
     end
+    opts.on("-s", "--split", "Create a separate commit for each module.") do
+      @split = true
+    end
     opts.on("-b", "--rebase", "Rebase after successful sync.") do
       @rebase = true
-    end
-    opts.on("-a", "--all", "Collects all modules from the specified paths.") do
-      @all = true
-    end
-    opts.on("-e", "--exclude [PATTERN_LIST]", String, "Exclude all modules in the comma separated list of directories from sync when using -a option.") do |dirlist|
-      @excludedirs = dirlist.split(",")
     end
   end
 
@@ -67,7 +70,7 @@ class Sync < Command
       helper.modules_from_paths(@all ? helper.module_paths(ARGV, @excludedirs) : ARGV, @module_options)
     end
     helper.check_arguments
-    helper.sync(@message, @rebase)
+    helper.sync(@message, @rebase, @split)
   end
 
 end

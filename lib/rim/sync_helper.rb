@@ -19,12 +19,13 @@ class SyncHelper < CommandHelper
   end
 
   # sync all module changes into rim branch
-  def sync(message = nil, rebase = nil)
+  def sync(message = nil, rebase = nil, split = true)
     # get the name of the current workspace branch
     RIM::git_session(@ws_root) do |s|
       branch = s.current_branch
       rim_branch = "rim/" + branch
       branch_sha1 = nil
+      changed_modules = nil
       if branch.empty?
         raise RimException.new("Not on a git branch.")
       elsif branch.start_with?("rim/")
@@ -35,6 +36,7 @@ class SyncHelper < CommandHelper
         rev = get_latest_clean_path_revision(s, branch, remote_rev)
         if !s.has_branch?(rim_branch) || has_ancestor?(s, branch, s.rev_sha1(rim_branch)) || !has_ancestor?(s, rim_branch, remote_rev)
           s.execute("git branch -f #{rim_branch} #{rev}")
+          branch_sha1 = s.rev_sha1(rim_branch)
         end
         remote_url = "file://" + @ws_root
         tmpdir = clone_or_fetch_repository(remote_url, module_tmp_git_path(".ws"), "Cloning workspace git...")
@@ -47,11 +49,15 @@ class SyncHelper < CommandHelper
             tmp_session.execute("git clean -xdf")
             tmp_session.execute("git checkout #{rim_branch}")
           end
-          sync_modules(tmp_session, message)
+          changed_modules = sync_modules(tmp_session, message)
+          if !split
+            tmp_session.execute("git reset --soft #{branch_sha1}")
+            commit(tmp_session, message ? message : get_commit_message(changed_modules)) if tmp_session.uncommited_changes?
+          end
           tmp_session.execute("git push #{remote_url} #{rim_branch}:#{rim_branch}")
         end
       end
-      if s.rev_sha1(rim_branch) != branch_sha1
+      if !changed_modules.empty?
         if rebase
           s.execute("git rebase #{rim_branch}")
           @logger.info("Changes have been commited to branch #{rim_branch} and workspace has been rebased successfully.")
@@ -71,10 +77,14 @@ private
     @module_infos.each do |module_info|
       module_helpers.push(SyncModuleHelper.new(session.execute_dir, @ws_root, module_info, @logger))
     end
+    changed_modules = []
     module_helpers.each do |m|
       @logger.info("Synchronizing #{m.module_info.local_path}...")
-      m.sync(message)
+      if m.sync(message)
+        changed_modules << m.module_info
+      end
     end
+    changed_modules
   end
 
   # get latest revision from which all parent revisions are clean 
@@ -120,6 +130,18 @@ private
     parents = session.parent_revs(rev)
     !parents.empty? ? parents.first : nil 
   end  
+
+  #create default commit message from array of changed modules
+  def get_commit_message(changed_modules)
+    StringIO.open do |s|
+      s.puts "rim sync."
+      s.puts
+      changed_modules.each do |m|
+        s.puts m.local_path
+      end
+      s.string
+    end
+  end
 
 end
 

@@ -85,6 +85,18 @@ def clone_or_fetch_repository(remote_url, local_path, clone_log = nil)
   local_path
 end
 
+def commit(session, message)
+  msg_file = Tempfile.new('message')
+  begin
+    msg_file << message
+    msg_file.close
+    session.execute("git add --all")
+    session.execute("git commit -F #{msg_file.path}")
+  ensure
+    msg_file.close(true)
+  end
+end
+
 def each_module_parallel(task_desc, modules)
   if !modules.empty?
     @logger.debug "starting \"#{task_desc}\" for #{modules.size} modules\r"

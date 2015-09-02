@@ -22,6 +22,7 @@ module RIM
     # export +revision+ of +mod+ into working copy
     # BEWARE: any changes to the working copy target dir will be lost!
     def export_module(message)
+      changes = false
       RIM::git_session(@dest_root) do |d|
         start_sha1 = d.rev_sha1("HEAD")
         git_path = module_git_path(@remote_path)
@@ -44,26 +45,10 @@ module RIM
         end
         temp_commit(d, "commit changes") if needs_commit?(d)
         d.execute("git reset --soft #{start_sha1}")
-        commit(message) if d.uncommited_changes?
+        changes = d.uncommited_changes?
+        commit(d, message || "rim sync: module #{@module_info.local_path}") if changes
       end
-    end
-
-    def commit(message)
-      RIM::git_session(@dest_root) do |s|
-        msg_file = Tempfile.new('message')
-        begin
-          if message
-            msg_file << message
-          else
-            msg_file << "rim sync: module #{@module_info.local_path}"
-          end
-          msg_file.close
-          s.execute("git add --all")
-          s.execute("git commit -F #{msg_file.path}")
-        ensure
-          msg_file.close(true)
-        end
-      end
+      changes
     end
 
     def needs_commit?(session)
