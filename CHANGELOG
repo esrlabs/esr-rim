@@ -38,3 +38,32 @@
 * added --gerrit option, needed for pushing new branchs to gerrit [BS-202]
 * fixed exception on rim sync after moving working copy [BS-248]
 
+# 1.1.1
+
+* fixed rim sync fails if CRLF warning is present [BS-281]
+* fixed rim upload fails to upload claiming branch does not exist [BS-264]
+
+# 1.1.2
+
+* fixed Exception in rim  sync when autocrlf is turned on [BS-233]
+
+# 1.1.3
+
+* added -n (no review) option to rim upload.
+* fixed rim sync doesn't handle filename case changes correctly [BS-254]
+* made preparation of mirrored workspace more robust
+
+# 1.1.4
+
+* allow sync and upload on touched git working repository.
+
+# 1.1.5
+
+* fixed workaround for windows file lock problem [BS-308]
+
+# 1.2.0
+
+* changed commit strategy for sync to automatic squashing to a single commit. Added -s option to force separate commits.
+* added -a option to allow simple specification of multiple syncs.
+* added -r option that allows sync and rebase in one step [BS-319]
+* fixed exception in rim sync when -u option is not provided [BS-232]
