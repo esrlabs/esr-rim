@@ -27,7 +27,7 @@ class Sync < Command
     opts.on("-a", "--all", "Collects all modules from the specified paths.") do
       @all = true
     end
-    opts.on("-e", "--exclude=[PATTERN_LIST]", String, "Exclude all modules of a comma separated list of directories when using sync with -a option.") do |dirlist|
+    opts.on("-e", "--exclude PATTERN_LIST", String, "Exclude all modules of a comma separated list of directories when using sync with -a option.") do |dirlist|
       @excludedirs = dirlist.split(",")
     end
     @module_options = {}
@@ -38,7 +38,7 @@ class Sync < Command
     opts.on("-r", "--target-revision REVISION", String, "Set the target revision of the module.") do |target_revision|
       @module_options[:target_revision] = target_revision
     end
-    opts.on("-i", "--ignore=[PATTERN_LIST]", String, "Set the ignore patterns by specifying a comma separated list.") do |ignores|
+    opts.on("-i", "--ignore PATTERN_LIST", String, "Set the ignore patterns by specifying a comma separated list.") do |ignores|
       @module_options[:ignores] = ignores || ""
     end
     opts.on("-m", "--message MESSAGE", String, "Message header to provide to each commit.") do |message|
