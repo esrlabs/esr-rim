@@ -67,3 +67,7 @@
 * added -a option to allow simple specification of multiple syncs.
 * added -r option that allows sync and rebase in one step [BS-319]
 * fixed exception in rim sync when -u option is not provided [BS-232]
+
+# 1.2.1
+
+* fixed -i option not working as expected in rim sync [#6]
