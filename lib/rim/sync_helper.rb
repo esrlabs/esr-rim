@@ -41,14 +41,9 @@ class SyncHelper < CommandHelper
         remote_url = "file://" + @ws_root
         tmpdir = clone_or_fetch_repository(remote_url, module_tmp_git_path(".ws"), "Cloning workspace git...")
         RIM::git_session(tmpdir) do |tmp_session|
-          if tmp_session.current_branch() == rim_branch
-            tmp_session.execute("git reset --hard remotes/origin/#{rim_branch}")
-            tmp_session.execute("git clean -xdf")
-          else 
-            tmp_session.execute("git reset --hard")
-            tmp_session.execute("git clean -xdf")
-            tmp_session.execute("git checkout #{rim_branch}")
-          end
+          tmp_session.execute("git reset --hard")
+          tmp_session.execute("git clean -xdf")
+          tmp_session.execute("git checkout -B #{rim_branch} remotes/origin/#{rim_branch}")
           changed_modules = sync_modules(tmp_session, message)
           if !split
             tmp_session.execute("git reset --soft #{branch_sha1}")

@@ -138,6 +138,48 @@ class SyncHelperTest < Minitest::Test
     end
   end
 
+  def test_sync_on_different_branches
+    mod1_info = create_module_git("mod1")
+    create_ws_git("testbr")
+    cut = RIM::SyncHelper.new(@ws_dir, @logger, [mod1_info])
+    cut.sync
+    remote_path = path_from_module_info(mod1_info)
+    RIM::git_session(remote_path) do |s|
+      FileUtils.mv(File.join(remote_path, "readme.txt"), File.join(remote_path, "readme.tx_"))
+      s.execute("git add --all .")
+      s.execute("git commit -m \"Temporary change of filename within mod1\"")
+      FileUtils.mv(File.join(remote_path, "readme.tx_"), File.join(remote_path, "Readme.txt"))
+      s.execute("git add --all .")
+      s.execute("git commit -m \"Changed case in filename within mod1\"")
+    end
+    RIM::git_session(@ws_dir) do |s|
+      s.execute("git checkout -b branch2")
+    end
+    cut.sync
+    RIM::git_session(@ws_dir) do |s|
+      s.execute("git rebase rim/branch2")
+      out = s.execute("git show --name-only")
+      assert out.include?("Readme.txt")
+    end
+    RIM::git_session(remote_path) do |s|
+      `echo ' changed' >> #{File.join(remote_path, "Readme.txt")}`
+      s.execute("git commit . -m \"Changed module file\"")
+    end
+    cut.sync    
+    RIM::git_session(@ws_dir) do |s|
+      s.execute("git rebase rim/branch2")
+      s.execute("git checkout testbr")
+      s.execute("git reset --hard branch2~1")
+      s.execute("git push origin branch2:branch2")
+    end
+    cut.sync
+    RIM::git_session(@ws_dir) do |s|
+      s.execute("git reset --hard rim/testbr")
+      out = s.execute("git show --name-only")
+      assert out.include?("Readme.txt")
+    end
+  end
+
 private
   def create_ws_git(branch = "master")
     FileUtils.mkdir_p(@ws_remote_dir)
