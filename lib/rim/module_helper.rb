@@ -23,7 +23,6 @@ protected
   # fetch module +mod+ into the .rim folder
   # works both for initial fetch and updates
   def fetch_module
-    git_path = module_git_path(@remote_path)
     FileUtils.mkdir_p git_path
     RIM::git_session(git_path) do |s|
       if !File.exist?(git_path + "/config")
@@ -47,6 +46,10 @@ protected
     end
     FileHelper.remove_empty_dirs(local_path)
     FileUtils.mkdir_p(local_path)
+  end
+
+  def git_path
+    module_git_path(@remote_path)
   end
 
 end

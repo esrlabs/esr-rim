@@ -9,12 +9,11 @@ module RIM
 # Example:
 #
 #  4759302048574720930432049375757593827561
-#  remote_url: ssh://some/url/to/git/repo
-#  revision:   8347982374198379842984562095637243593092
-#  rev_name:   mymod-1.2.3
-#  upstream:   trunk
-#  ignores:    CMakeLists.txt,*.arxml
-#  checksum:   9584872389474857324485873627894494726222
+#  remote_url:      ssh://some/url/to/git/repo
+#  revision_sha1:   8347982374198379842984562095637243593092
+#  target_revision: trunk
+#  ignores:         CMakeLists.txt,*.arxml
+#  checksum:        9584872389474857324485873627894494726222
 #
 # rev_name is a symbolic name for revision
 #
