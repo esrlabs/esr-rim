@@ -71,3 +71,8 @@
 # 1.2.1
 
 * fixed -i option not working as expected in rim sync [#6]
+
+# 1.2.2
+
+* fixed Issue #11: rim/xxx branch is not forwarded when remote head is past xxx branch.
+
