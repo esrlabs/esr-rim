@@ -3,6 +3,7 @@ require 'rim/rim_info'
 require 'rim/file_helper'
 require 'rim/dirty_check'
 require 'tempfile'
+require 'pathname'
 
 module RIM
   class SyncModuleHelper < ModuleHelper
@@ -33,7 +34,12 @@ module RIM
           local_path = File.join(@dest_root, @module_info.local_path)
           prepare_empty_folder(local_path, @module_info.ignores)
           temp_commit(d, "clear directory") if d.uncommited_changes?
-          s.execute("git archive --format tar #{@module_info.target_revision} | tar -x -C #{local_path}")
+          strip = ""
+          if @module_info.subdir != ""
+              depth = Pathname(@module_info.subdir).each_filename.count()
+              strip = "--strip-components=#{depth}"
+          end
+          s.execute("git archive --format tar #{@module_info.target_revision} #{@module_info.subdir} | tar #{strip} -x -C #{local_path}")
           sha1 = s.execute("git rev-parse #{@module_info.target_revision}").strip
           @rim_info = RimInfo.new
           @rim_info.remote_url = @module_info.remote_url

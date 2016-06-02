@@ -30,7 +30,7 @@ class Sync < Command
     opts.on("-e", "--exclude PATTERN_LIST", String, "Exclude all modules of a comma separated list of directories when using sync with -a option.") do |dirlist|
       @excludedirs = dirlist.split(",")
     end
-    @module_options = {}
+    @module_options = { :subdir => "" }
     opts.on("-u", "--remote-url URL", String, "Set the remote URL of the module.", \
                                               "A relative path will be applied to ssh://gerrit/") do |url|
       @module_options[:remote_url] = url 
@@ -50,6 +50,9 @@ class Sync < Command
     opts.on("-b", "--rebase", "Rebase after successful sync.") do
       @rebase = true
     end
+    opts.on("-d", "--subdir", String, "Sync just a subdir from the remote module.") do |subdir|
+      @module_options[:subdir] = subdir
+    end
   end
 
   def invoke()
@@ -63,8 +66,13 @@ class Sync < Command
       elsif !@module_options[:remote_url] || !@module_options[:target_revision]
         raise RimException.new("Please specify remote URL and target revision for the new module.")
       else
-        helper.add_module_info(helper.create_module_info(@module_options[:remote_url], local_path, @module_options[:target_revision], \
-            @module_options[:ignores]))
+        helper.add_module_info(helper.create_module_info(
+            @module_options[:remote_url],
+            local_path,
+            @module_options[:target_revision],
+            @module_options[:ignores],
+            @module_options[:subdir],
+        ))
       end 
     else
       helper.modules_from_paths(@all ? helper.module_paths(ARGV, @excludedirs) : ARGV, @module_options)

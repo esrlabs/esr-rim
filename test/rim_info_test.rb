@@ -75,7 +75,8 @@ def test_attributes
     :remote_url => "ssh://somehost/dir1/dir2",
     :revision_sha1 => "8347982374198379842984562095637243593092",
     :target_revision => "trunk",
-    :ignores => "CMakeLists.txt,*.arxml"
+    :ignores => "CMakeLists.txt,*.arxml",
+    :subdir => "foo/bar"
   }
   d = empty_test_dir("rim_info")
   create_rim_info(d, attrs)
@@ -85,6 +86,30 @@ def test_attributes
     assert_equal v, ri.send(k)
   end
 end
+
+def test_subdir_default
+  attrs_write = {
+    :remote_url => "ssh://somehost/dir1/dir2",
+    :revision_sha1 => "8347982374198379842984562095637243593092",
+    :target_revision => "trunk",
+    :ignores => "CMakeLists.txt,*.arxml",
+  }
+  attrs_expected = {
+    :remote_url => "ssh://somehost/dir1/dir2",
+    :revision_sha1 => "8347982374198379842984562095637243593092",
+    :target_revision => "trunk",
+    :ignores => "CMakeLists.txt,*.arxml",
+    :subdir => ""
+  }
+  d = empty_test_dir("rim_info")
+  create_rim_info(d, attrs_write)
+  ri = RIM::RimInfo.from_dir(d)
+  #puts File.read(d+"/.riminfo")
+  attrs_expected.each_pair do |k,v|
+    assert_equal v, ri.send(k)
+  end
+end
+
 
 def teardown
   # clean up test dirs created during last test

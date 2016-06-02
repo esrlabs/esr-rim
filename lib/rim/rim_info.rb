@@ -29,7 +29,8 @@ class RimInfo
     :revision_sha1,
     :target_revision,
     :ignores,
-    :checksum
+    :checksum,
+    :subdir
   ]
 
   AttrsDef.each do |d|
