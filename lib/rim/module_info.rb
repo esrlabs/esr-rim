@@ -19,7 +19,7 @@ class ModuleInfo
                  target_revision,
                  ignores = nil,
                  remote_branch_format = nil,
-                 subdir = "")
+                 subdir = nil)
     @remote_url = remote_url
     @remote_branch_format = remote_branch_format
     @local_path = local_path

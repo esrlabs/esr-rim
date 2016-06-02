@@ -30,10 +30,10 @@ private
       local_branch = nil
       remote_branch = nil
       infos = nil
-      if @module_info.subdir == ""
-        dest_path = tmp_git_path
-      else
+      if @module_info.subdir
         dest_path = File.join([tmp_git_path] + @module_info.subdir.split("/"))
+      else
+        dest_path = tmp_git_path
       end
       RIM::git_session(@ws_root) do |src|
         infos = get_branches_and_revision_infos(src, dest, parent_sha1, sha1s)
