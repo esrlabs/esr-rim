@@ -11,12 +11,20 @@ class ModuleInfo
   attr_reader :target_revision
   # ignores
   attr_reader :ignores
+
+  attr_reader :subdir
   
-  def initialize(remote_url, local_path, target_revision, ignores = nil, remote_branch_format = nil)
+  def initialize(remote_url,
+                 local_path,
+                 target_revision,
+                 ignores = nil,
+                 remote_branch_format = nil,
+                 subdir = "")
     @remote_url = remote_url
     @remote_branch_format = remote_branch_format
     @local_path = local_path
     @target_revision = target_revision
+    @subdir = subdir
     if ignores.is_a?(String)
       @ignores = ignores.split(",").each do |s| 
         s.strip! 

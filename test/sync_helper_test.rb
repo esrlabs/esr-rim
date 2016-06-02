@@ -44,8 +44,47 @@ class SyncHelperTest < Minitest::Test
       assert log[1].include?("mod2")
       assert File.exist?(File.join(@ws_dir, "mod1"))
       assert File.exist?(File.join(@ws_dir, "mod2"))
+      assert File.exist?(File.join(@ws_dir, "mod1", "readme.txt"))
+      assert File.exist?(File.join(@ws_dir, "mod2", "readme.txt"))
     end
   end
+
+  def test_files_are_synchronized_subtree
+    mod_git_dir = create_all_module_git("mod_all")
+    mod_a_info =  RIM::ModuleInfo.new("file://" + mod_git_dir, "modules/a", "master", nil, nil, "mod_a")
+    create_ws_git("testbr")
+    cut = RIM::SyncHelper.new(@ws_dir, @logger, [mod_a_info])
+    cut.sync
+    RIM::git_session(@ws_dir) do |s|
+      assert !File.exist?(File.join(@ws_dir, "modules", "a"))
+      s.execute("git checkout rim/testbr")
+      check_not_dirty(s)
+      log = s.execute("git log | grep \" module \"").split("\n").sort
+      assert log.size == 1
+      assert log[0].include?("modules/a")
+      assert !File.exist?(File.join(@ws_dir, "modules", "b"))
+      assert File.exist?(File.join(@ws_dir, "modules", "a"))
+      assert File.exist?(File.join(@ws_dir, "modules", "a", "file_a.c"))
+    end
+  end
+
+  def test_files_are_synchronized_subtree_deep
+    mod_git_dir = create_all_module_git("mod_all")
+    mod_a_info =  RIM::ModuleInfo.new("file://" + mod_git_dir, "modules/b_src", "master", nil, nil, "mod_b/src")
+    create_ws_git("testbr")
+    cut = RIM::SyncHelper.new(@ws_dir, @logger, [mod_a_info])
+    cut.sync
+    RIM::git_session(@ws_dir) do |s|
+      assert !File.exist?(File.join(@ws_dir, "modules", "b_src"))
+      s.execute("git checkout rim/testbr")
+      check_not_dirty(s)
+      log = s.execute("git log | grep \" module \"").split("\n").sort
+      assert log.size == 1
+      assert log[0].include?("modules/b_src")
+      assert File.exist?(File.join(@ws_dir, "modules", "b_src", "file_b.c"))
+    end
+  end
+
 
   def test_files_are_synchronized_on_existing_branch
     mod1_info = create_module_git("mod1")
@@ -215,6 +254,28 @@ private
       s.execute("git commit -m \"Initial commit\"")
     end
     return RIM::ModuleInfo.new("file://" + git_dir, name, branch)
+  end
+
+  def create_all_module_git(name, branch = "master")
+    git_dir = File.join(@remote_git_dir, name)
+    FileUtils.mkdir_p(File.join(git_dir,"mod_a"))
+    FileUtils.mkdir_p(File.join(git_dir,"mod_b","src"))
+    RIM::git_session(git_dir) do |s|
+      s.execute("git init")
+      s.execute("git checkout -B #{branch}")
+      File.open(File.join(git_dir, "readme.txt"), "w") do |f|
+        f.write("Content.")
+      end
+      File.open(File.join(git_dir, "mod_a", "file_a.c"), "w") do |f|
+        f.write("Content.")
+      end
+      File.open(File.join(git_dir, "mod_b", "src", "file_b.c"), "w") do |f|
+        f.write("Content.")
+      end
+      s.execute("git add .")
+      s.execute("git commit -m \"Initial commit\"")
+    end
+    return git_dir
   end
 
   def path_from_module_info(module_info)
