@@ -35,7 +35,7 @@ module RIM
           prepare_empty_folder(local_path, @module_info.ignores)
           temp_commit(d, "clear directory") if d.uncommited_changes?
           strip = ""
-          if @module_info.subdir != ""
+          if @module_info.subdir
               depth = Pathname(@module_info.subdir).each_filename.count()
               strip = "--strip-components=#{depth}"
           end
@@ -46,6 +46,7 @@ module RIM
           @rim_info.target_revision = @module_info.target_revision
           @rim_info.revision_sha1 = sha1
           @rim_info.ignores = @module_info.ignores.join(",")
+          @rim_info.subdir = @module_info.subdir
           @rim_info.to_dir(local_path)
           DirtyCheck.mark_clean(local_path)
         end

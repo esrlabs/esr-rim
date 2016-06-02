@@ -30,7 +30,7 @@ class Sync < Command
     opts.on("-e", "--exclude PATTERN_LIST", String, "Exclude all modules of a comma separated list of directories when using sync with -a option.") do |dirlist|
       @excludedirs = dirlist.split(",")
     end
-    @module_options = { :subdir => "" }
+    @module_options = {}
     opts.on("-u", "--remote-url URL", String, "Set the remote URL of the module.", \
                                               "A relative path will be applied to ssh://gerrit/") do |url|
       @module_options[:remote_url] = url 
@@ -44,14 +44,14 @@ class Sync < Command
     opts.on("-m", "--message MESSAGE", String, "Message header to provide to each commit.") do |message|
       @message = message
     end
+    opts.on("-d", "--subdir SUBDIR", String, "Sync just a subdir from the remote module.") do |subdir|
+      @module_options[:subdir] = subdir
+    end
     opts.on("-s", "--split", "Create a separate commit for each module.") do
       @split = true
     end
     opts.on("-b", "--rebase", "Rebase after successful sync.") do
       @rebase = true
-    end
-    opts.on("-d", "--subdir", String, "Sync just a subdir from the remote module.") do |subdir|
-      @module_options[:subdir] = subdir
     end
   end
 

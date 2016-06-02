@@ -32,8 +32,14 @@ class CommandHelper < Processor
     raise RimException.new("Unexpected command line arguments.") if !ARGV.empty?
   end
 
-  def create_module_info(remote_url, local_path, target_revision, ignores)
-    ModuleInfo.new(remote_url, get_relative_path(local_path), target_revision, ignores, remote_url ? get_remote_branch_format(remote_url) : nil)
+  def create_module_info(remote_url, local_path, target_revision, ignores, subdir)
+    ModuleInfo.new(
+        remote_url,
+        get_relative_path(local_path),
+        target_revision,
+        ignores,
+        remote_url ? get_remote_branch_format(remote_url) : nil,
+        subdir)
   end
 
   def modules_from_manifest(path)
@@ -60,9 +66,12 @@ class CommandHelper < Processor
     module_path = find_file_dir_in_workspace(path || ".", RimInfo::InfoFileName)
     if module_path
       rim_info = RimInfo.from_dir(module_path)
-      module_info = create_module_info(opts.has_key?(:remote_url) ? opts[:remote_url] : rim_info.remote_url, \
-          module_path, opts.has_key?(:target_revision) ? opts[:target_revision] : rim_info.target_revision, \
-          opts.has_key?(:ignores) ? opts[:ignores] : rim_info.ignores)
+      module_info = create_module_info(
+        opts.has_key?(:remote_url) ? opts[:remote_url] : rim_info.remote_url,
+        module_path,
+        opts.has_key?(:target_revision) ? opts[:target_revision] : rim_info.target_revision,
+        opts.has_key?(:ignores) ? opts[:ignores] : rim_info.ignores,
+        opts.has_key?(:subdir) ? opts[:subdir] : rim_info.subdir)
       if module_info.valid?
         add_unique_module_info(module_info)
         module_path

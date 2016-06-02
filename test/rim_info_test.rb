@@ -99,7 +99,7 @@ def test_subdir_default
     :revision_sha1 => "8347982374198379842984562095637243593092",
     :target_revision => "trunk",
     :ignores => "CMakeLists.txt,*.arxml",
-    :subdir => ""
+    :subdir => nil
   }
   d = empty_test_dir("rim_info")
   create_rim_info(d, attrs_write)
