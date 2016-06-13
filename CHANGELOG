@@ -76,3 +76,7 @@
 
 * fixed Issue #11: rim/xxx branch is not forwarded when remote head is past xxx branch.
 
+# 1.3.0
+
+* added support for rimming subdirectories from module gits
+* added rim info command
