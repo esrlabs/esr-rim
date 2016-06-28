@@ -28,7 +28,8 @@ module Manifest
             :remote_path => mod["remote_path"],
             :local_path => mod["local_path"],
             :target_revision => mod["target_revision"],
-            :ignores => mod["ignores"]
+            :ignores => mod["ignores"],
+            :subdir => mod["subdir"]
           ))
       end
     end

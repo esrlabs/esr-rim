@@ -18,12 +18,14 @@ class Module
   attr_reader :local_path
   attr_reader :target_revision
   attr_reader :ignores
+  attr_reader :subdir
 
   def initialize(args = {})
     @remote_path = args[:remote_path]
     @local_path = args[:local_path]
     @target_revision = args[:target_revision]
     @ignores = args[:ignores]
+    @subdir = args[:subdir]
   end
 end
 

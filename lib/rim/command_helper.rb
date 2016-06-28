@@ -45,7 +45,7 @@ class CommandHelper < Processor
   def modules_from_manifest(path)
     manifest = read_manifest(path)
     manifest.modules.each do |mod|
-      add_unique_module_info(create_module_info(mod.remote_path, mod.local_path, mod.target_revision, mod.ignores))
+      add_unique_module_info(create_module_info(mod.remote_path, mod.local_path, mod.target_revision, mod.ignores, mod.subdir))
     end
     true
   end
