@@ -85,3 +85,7 @@
 
 * fixed sync with manifests and extended to support of subdirectories
 
+# 1.3.2
+
+* fixed character case related problem on windows [#13]
+

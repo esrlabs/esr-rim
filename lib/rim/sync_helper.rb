@@ -43,7 +43,12 @@ class SyncHelper < CommandHelper
         RIM::git_session(tmpdir) do |tmp_session|
           tmp_session.execute("git reset --hard")
           tmp_session.execute("git clean -xdf")
-          tmp_session.execute("git checkout -B #{rim_branch} remotes/origin/#{rim_branch}")
+          # use -f here to prevent git checkout from checking for untracked files which might be overwritten. 
+          # this is safe since we removed any untracked files before.
+          # this is a workaround for a name case problem on windows:
+          # if a file's name changes case between the current head and the checkout target,
+          # git checkout will report the file with the new name as untracked and will fail
+          tmp_session.execute("git checkout -B #{rim_branch} -f remotes/origin/#{rim_branch}")
           changed_modules = sync_modules(tmp_session, message)
           if !split
             tmp_session.execute("git reset --soft #{branch_sha1}")
