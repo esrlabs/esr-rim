@@ -39,6 +39,7 @@ class SyncHelper < CommandHelper
           branch_sha1 = s.rev_sha1(rim_branch)
         end
         remote_url = "file://" + @ws_root
+        @logger.debug("Folder for temporary git repositories: #{@rim_path}")
         tmpdir = clone_or_fetch_repository(remote_url, module_tmp_git_path(".ws"), "Cloning workspace git...")
         RIM::git_session(tmpdir) do |tmp_session|
           tmp_session.execute("git reset --hard")

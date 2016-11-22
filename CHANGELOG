@@ -89,3 +89,7 @@
 
 * fixed character case related problem on windows [#13]
 
+# 1.3.3
+
+* No more placing .rim into the workspace if HOME is being set: using a unique folder under HOME/.rim for each workspace
+ 

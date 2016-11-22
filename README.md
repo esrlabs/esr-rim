@@ -5,6 +5,7 @@ RIM lets you work with multiple git repositories from within one single git repo
 # RIM User Guide
 
 > From RIM version 1.1.4 it is no more necessary to set the global git autocrlf option to false on Windows platforms. If you don't have other reasons you might want to set it back to the recommended value (which is true).
+> From RIM version 1.3.3 the temporary directory used for git repositories is no more placed into the workspace. If the HOME environment variable is set it will be placed into a unique directory under $HOME/.rim
 
 ## Concept
 
@@ -37,7 +38,10 @@ Install and update RIM via the gem package mechanism:
 ## Getting started in your project
 
 There's not a lot you have to do to introduce rim into your project. The most important step is:
-Before using rim add the pattern
+
+If you don't want RIM to place .rim folders into your workspaces make sure to define the HOME variable. If defined the working folders will be placed into a .rim folder within the HOME directory.
+
+Otherwise add the pattern
 
     .rim/
 

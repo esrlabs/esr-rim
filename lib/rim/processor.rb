@@ -6,6 +6,7 @@ require 'rim/rim_exception'
 require 'rake'
 require 'pathname'
 require 'uri'
+require 'digest/sha1'
 
 module RIM
 
@@ -16,19 +17,24 @@ GerritServer = "ssh://gerrit/"
 
 def initialize(workspace_root, logger)
   @ws_root = workspace_root
+  if ENV.has_key?('HOME')
+    @rim_path = File.join(ENV['HOME'], ".rim", Digest::SHA1.hexdigest(@ws_root)[0...10])
+  else
+    @rim_path = File.join(@ws_root, ".rim")
+  end
   @logger = logger
 end
 
 def module_git_path(remote_path)
   # remote url without protocol specifier
   # this way the local path should be unique
-  File.join(@ws_root, ".rim", remote_path)
+  File.join(@rim_path, remote_path)
 end
 
 def module_tmp_git_path(remote_path)
   # remote url without protocol specifier
   # this way the local path should be unique
-  File.join(@ws_root, ".rim", ".tmp", remote_path)
+  File.join(@rim_path, ".tmp", remote_path)
 end
 
 def remote_path(remote_url)
