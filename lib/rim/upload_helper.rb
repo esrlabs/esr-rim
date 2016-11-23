@@ -16,7 +16,9 @@ class UploadHelper < CommandHelper
     # get the name of the current workspace branch
     RIM::git_session(@ws_root) do |s|
       branch = s.current_branch
-      if !branch.start_with?("rim/")
+      if branch.nil?
+        raise RimException.new("Not on a git branch.")
+      elsif !branch.start_with?("rim/")
         begin
           sha1 = s.rev_sha1(branch)
           @logger.info("Uploading modules...")

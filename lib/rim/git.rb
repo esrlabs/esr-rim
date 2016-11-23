@@ -92,7 +92,7 @@ class GitSession
   def current_branch
     out = execute "git branch"
     out.split("\n").each do |l| 
-      if l =~ /^\*\s+(\S+)/
+      if !l.include?('(') && (l =~ /^\*\s+(\S+)/)
         return $1
       end
     end
