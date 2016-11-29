@@ -17,8 +17,11 @@ GerritServer = "ssh://gerrit/"
 
 def initialize(workspace_root, logger)
   @ws_root = workspace_root
-  if ENV.has_key?('HOME')
-    @rim_path = File.join(ENV['HOME'], ".rim", Digest::SHA1.hexdigest(@ws_root)[0...10])
+  rim_dir = nil
+  rim_dir = ENV['RIM_HOME'] if ENV.has_key?('RIM_HOME')
+  rim_dir = File.join(ENV['HOME'], ".rim") if rim_dir.nil? && ENV.has_key?('HOME')
+  if rim_dir
+    @rim_path = File.join(rim_dir, Processor.shorten_path(@ws_root))
   else
     @rim_path = File.join(@ws_root, ".rim")
   end
@@ -28,13 +31,13 @@ end
 def module_git_path(remote_path)
   # remote url without protocol specifier
   # this way the local path should be unique
-  File.join(@rim_path, remote_path)
+  File.join(@rim_path, Processor.shorten_path(remote_path))
 end
 
 def module_tmp_git_path(remote_path)
   # remote url without protocol specifier
   # this way the local path should be unique
-  File.join(@rim_path, ".tmp", remote_path)
+  File.join(@rim_path, ".tmp", Processor.shorten_path(remote_path))
 end
 
 def remote_path(remote_url)
@@ -138,6 +141,10 @@ def each_module_parallel(task_desc, modules)
     end
   end
 end
+
+def self.shorten_path(path)
+  Digest::SHA1.hexdigest(path || '')[0...10]
+end  
 
 end
 

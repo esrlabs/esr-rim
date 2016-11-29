@@ -6,7 +6,8 @@ RIM lets you work with multiple git repositories from within one single git repo
 
 > From RIM version 1.1.4 it is no more necessary to set the global git autocrlf option to false on Windows platforms. If you don't have other reasons you might want to set it back to the recommended value (which is true).
 
-> From RIM version 1.3.3 the temporary directory used for git repositories is no more placed into the workspace. If the HOME environment variable is set it will be placed into a unique directory under $HOME/.rim
+> From RIM version 1.3.3 the location of the helper directory for copies of git repositories can be configured with environment variables: If a RIM_HOME environment variable is set
+then it will be placed into the specified location, otherwise if the HOME environment variable is set it will be placed into a unique directory under $HOME/.rim
 
 ## Concept
 

@@ -97,3 +97,9 @@
 
 * fixed Issue #12: Exception when rebase is in progress
 * fixed Issue #3: Set homepage in gem info properly
+
+# 1.3.5
+
+* Shorten paths of helper git directories.
+* Use RIM_HOME for helper git directories if defined.
+ 
