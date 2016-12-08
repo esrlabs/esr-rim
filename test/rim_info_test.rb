@@ -106,7 +106,11 @@ def test_subdir_default
   ri = RIM::RimInfo.from_dir(d)
   #puts File.read(d+"/.riminfo")
   attrs_expected.each_pair do |k,v|
-    assert_equal v, ri.send(k)
+    if v.nil?
+      assert_nil ri.send(k)
+    else
+      assert_equal v, ri.send(k)
+    end
   end
 end
 

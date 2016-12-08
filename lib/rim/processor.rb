@@ -18,7 +18,7 @@ GerritServer = "ssh://gerrit/"
 def initialize(workspace_root, logger)
   @ws_root = workspace_root
   rim_dir = nil
-  rim_dir = ENV['RIM_HOME'] if ENV.has_key?('RIM_HOME')
+  rim_dir = File.expand_path(ENV['RIM_HOME']) if ENV.has_key?('RIM_HOME')
   rim_dir = File.join(ENV['HOME'], ".rim") if rim_dir.nil? && ENV.has_key?('HOME')
   if rim_dir
     @rim_path = File.join(rim_dir, Processor.shorten_path(@ws_root))
@@ -143,7 +143,11 @@ def each_module_parallel(task_desc, modules)
 end
 
 def self.shorten_path(path)
-  Digest::SHA1.hexdigest(path || '')[0...10]
+  if path.length <= 10
+    path.gsub(':', '#')
+  else
+    Digest::SHA1.hexdigest(path || '')[0...10]
+  end
 end  
 
 end

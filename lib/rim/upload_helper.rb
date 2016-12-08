@@ -24,7 +24,7 @@ class UploadHelper < CommandHelper
           @logger.info("Uploading modules...")
           upload_modules(get_upload_revisions(s, sha1))
         ensure
-          s.execute("git checkout #{branch}")
+          s.execute("git checkout -B #{branch}")
         end
       else
         raise RimException.new("The current git branch '#{branch}' is a rim integration branch. Please switch to a non rim branch to proceed.")

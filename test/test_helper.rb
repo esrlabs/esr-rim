@@ -16,6 +16,7 @@ def empty_test_dir(dir)
   dir = File.dirname(__FILE__)+"/"+dir
   rm_rf(dir)
   mkdir_p(dir)
+  ENV["RIM_HOME"] = File.join(dir, ".rim") if @test_dirs.nil?
   @test_dirs ||= []
   @test_dirs << dir
   dir

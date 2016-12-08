@@ -102,4 +102,10 @@
 
 * Shorten paths of helper git directories.
 * Use RIM_HOME for helper git directories if defined.
- 
+
+# 1.3.6
+
+* Use fully qualified reference for branches to avoid ambiguities.
+* Normalize path set in RIM_HOME before using (fixes problems with backslash used in Windows).
+* Use SHA1 for shortened paths only if shorter than original path.
+* Set RIM_HOME to non-persistent path for unit tests.

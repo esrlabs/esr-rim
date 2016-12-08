@@ -31,6 +31,7 @@ class SyncHelper < CommandHelper
       elsif branch.start_with?("rim/")
         raise RimException.new("The current git branch '#{branch}' is a rim integration branch. Please switch to a non rim branch to proceed.")
       else
+        branch = "refs/heads/#{branch}"
         branch_sha1 = s.rev_sha1(rim_branch)
         remote_rev = get_latest_remote_revision(s, branch)
         rev = get_latest_clean_path_revision(s, branch, remote_rev)
