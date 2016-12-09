@@ -61,15 +61,14 @@ module RIM
     def needs_commit?(session)
       # do we need to commit something?
       stat = session.status(@module_info.local_path)
-      ignored = stat.lines.select{ |l| l.ignored? }
+      # no files should be ignored due to --force option. Anyway we will check for ignored files
+      ignored = []
+      session.execute("git add --all --force #{@module_info.local_path}") do |out, e|
+        ignored = parse_ignored_files(session, out, e)
+      end
       if ignored.empty?
-        session.execute("git add --all #{@module_info.local_path}") do |out, e|
-          ignored = parse_ignored_files(session, out, e)
-        end
-        if ignored.empty?
-          stat = session.status(@module_info.local_path)
-          ignored = stat.lines.select{ |l| l.ignored? }
-        end
+        stat = session.status(@module_info.local_path)
+        ignored = stat.lines.select{ |l| l.ignored? }
       end
       if !ignored.empty?
         messages = ["Sync failed due to files/dirs of #{@module_info.local_path} which are ignored by workspace's .gitignore:"]
