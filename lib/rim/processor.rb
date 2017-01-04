@@ -19,7 +19,7 @@ def initialize(workspace_root, logger)
   @ws_root = workspace_root
   rim_dir = nil
   rim_dir = File.expand_path(ENV['RIM_HOME']) if ENV.has_key?('RIM_HOME')
-  rim_dir = File.join(ENV['HOME'], ".rim") if rim_dir.nil? && ENV.has_key?('HOME')
+  rim_dir = File.join(File.expand_path(ENV['HOME']), ".rim") if rim_dir.nil? && ENV.has_key?('HOME')
   if rim_dir
     @rim_path = File.join(rim_dir, Processor.shorten_path(@ws_root))
   else
