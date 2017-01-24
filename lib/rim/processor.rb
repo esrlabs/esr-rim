@@ -109,36 +109,33 @@ end
 def each_module_parallel(task_desc, modules)
   if !modules.empty?
     @logger.debug "starting \"#{task_desc}\" for #{modules.size} modules\r"
-    threads = []
-    messages = []
-    i = 0
-    done = 0
-    while i == 0 || !threads.empty?
-      while threads.size < MaxThreads && i < modules.size
-        threads << Thread.new(i) do |i|
+    index_queue = Queue.new
+    (0...modules.size).each do |i|
+      index_queue << i
+    end
+    result_queue = Queue.new
+    (1..MaxThreads).each do
+      Thread.new do
+        loop do
+          i = index_queue.pop(true)
+          break if i.nil?
+          result = []
           begin
             yield(modules[i], i)
           rescue RimException => e
-            messages += e.messages
+            result = e.messages
+          rescue Exception => e
+            result = [e.to_s]
           end
+          result_queue << result
         end
-        i += 1
       end
-      sleep(0.1)
-      threads = threads.select{|t|
-        if t.alive?
-          true
-        else
-          t.join
-          done += 1
-          @logger.debug "#{task_desc} #{done}/#{modules.size}\r"
-          false
-        end
-      }
     end
-    if !messages.empty?
-      raise RimException.new(messages)
+    messages = []
+    (0...modules.size).each do |i|
+      messages.concat(result_queue.pop)
     end
+    raise RimException.new(messages) if !messages.empty?
   end
 end
 
