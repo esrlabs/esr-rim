@@ -144,6 +144,17 @@ class GitSession
     end
     sha1
   end
+
+  # returns some informations about a revision
+  def rev_infos(rev, desired)
+    info = {}
+    desired.each_pair do |key, value|
+      execute "git log -1 --format=#{value} #{rev} --" do |out, e|
+        info[key] = out.strip if !e
+      end
+    end
+    info
+  end
   
   # returns the SHA-1 representations of the heads of all remote branches
   def remote_branch_revs

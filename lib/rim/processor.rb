@@ -22,7 +22,7 @@ def initialize(workspace_root, logger)
   rim_dir = File.join(File.expand_path(ENV['HOME']), ".rim") if rim_dir.nil? && ENV.has_key?('HOME')
   if rim_dir
     @rim_path = File.join(rim_dir, Processor.shorten_path(@ws_root))
-  else
+  else  
     @rim_path = File.join(@ws_root, ".rim")
   end
   @logger = logger

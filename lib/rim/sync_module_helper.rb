@@ -47,6 +47,7 @@ module RIM
           @rim_info.revision_sha1 = sha1
           @rim_info.ignores = @module_info.ignores.join(",")
           @rim_info.subdir = @module_info.subdir
+          @rim_info.infos = s.rev_infos(@module_info.target_revision, RimInfo.git_infos)
           @rim_info.to_dir(local_path)
           DirtyCheck.mark_clean(local_path)
         end

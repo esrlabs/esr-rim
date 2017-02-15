@@ -36,6 +36,12 @@ class RimInfo
     attr_accessor d
   end
 
+  @@git_infos = {
+    :committer_date => "%ci"
+  }
+
+  attr_accessor :infos
+
   def self.exists?(dir)
     File.exist?(info_file(dir))
   end
@@ -50,6 +56,10 @@ class RimInfo
     mi = self.new
     mi.from_s(content)
     mi
+  end
+
+  def self.git_infos
+    @@git_infos
   end
 
   def dirty?
@@ -81,6 +91,12 @@ class RimInfo
     AttrsDef.each do |a|
       send("#{a}=".to_sym, attrs[a])
     end
+    @@git_infos.each_pair do |key, value|
+      if attrs.has_key?(key)
+        @infos ||= {}
+        @infos[key] = attrs[key]
+      end
+    end
     @dirty = checksum != calc_sha1(content)
   end
 
@@ -110,10 +126,18 @@ class RimInfo
   end
 
   def to_s
-    max_len = AttrsDef.collect{|a| a.size}.max
-    AttrsDef.collect { |a|
+    i = @infos || {}
+    max_len = (AttrsDef + i.keys).collect{|a| a.size}.max
+    s = AttrsDef.collect { |a|
       "#{a.to_s.ljust(max_len)}: #{send(a)}"
     }.join("\n")
+    if !i.empty?
+      s << "\n\n"
+      i.each_pair { |key, value| 
+        s << "#{key.to_s.ljust(max_len)}: #{value.to_s}\n"
+      }
+    end
+    s
   end
 
   private
