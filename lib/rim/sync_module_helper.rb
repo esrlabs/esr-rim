@@ -41,10 +41,12 @@ module RIM
           end
           s.execute("git archive --format tar #{@module_info.target_revision} #{@module_info.subdir} | tar #{strip} -x -C #{local_path}")
           sha1 = s.execute("git rev-parse #{@module_info.target_revision}").strip
+          timestamp = s.rev_timestamp(@module_info.target_revision)
           @rim_info = RimInfo.new
           @rim_info.remote_url = @module_info.remote_url
           @rim_info.target_revision = @module_info.target_revision
           @rim_info.revision_sha1 = sha1
+          @rim_info.revision_timestamp = timestamp if timestamp
           @rim_info.ignores = @module_info.ignores.join(",")
           @rim_info.subdir = @module_info.subdir
           @rim_info.to_dir(local_path)

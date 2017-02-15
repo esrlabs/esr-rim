@@ -144,6 +144,15 @@ class GitSession
     end
     sha1
   end
+
+  # returns the timestamp of a revision
+  def rev_timestamp(rev)
+    timestamp = nil
+    execute "git log -1 --format=%ai #{rev} --" do |out, e|
+      timestamp = out.strip if !e
+    end
+    timestamp
+  end
   
   # returns the SHA-1 representations of the heads of all remote branches
   def remote_branch_revs
