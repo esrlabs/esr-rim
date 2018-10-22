@@ -131,3 +131,7 @@
 
 * Allow changing sub directory path to empty string
 * Fix tar usage for Windows
+
+# 1.4.2
+
+* Fixed temporary-folder-generation on Windows, which could e.g. break the dirty check

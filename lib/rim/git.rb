@@ -200,6 +200,7 @@ class GitSession
   # returns the value returned by the block
   def within_exported_rev(rev, paths=[])
     Dir.mktmpdir("rim") do |d|
+      d = Dir.glob(d)[0]
       c = File.join(d, "content")
       FileUtils.mkdir(c)
       export_rev(rev, c, paths)
