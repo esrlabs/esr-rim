@@ -126,3 +126,8 @@
 # 1.4.0
 
 * fixed Issue #20: Add revision timestamp to .riminfo
+
+# 1.4.1
+
+* Allow changing sub directory path to empty string
+* Fix tar usage for Windows

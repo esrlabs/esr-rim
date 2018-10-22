@@ -190,7 +190,7 @@ class GitSession
         path_args << " "
         path_args << paths.shift
       end
-      execute "git archive --format tar #{rev} #{path_args} | tar -x -C #{dir}"
+      execute "git archive --format tar #{rev} #{path_args} | tar -C #{dir} -xf -"
       break if paths.empty?
     end
   end

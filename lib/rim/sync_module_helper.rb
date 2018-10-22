@@ -39,7 +39,7 @@ module RIM
               depth = Pathname(@module_info.subdir).each_filename.count()
               strip = "--strip-components=#{depth}"
           end
-          s.execute("git archive --format tar #{@module_info.target_revision} #{@module_info.subdir} | tar #{strip} -x -C #{local_path}")
+          s.execute("git archive --format tar #{@module_info.target_revision} #{@module_info.subdir} | tar #{strip} -C #{local_path} -xf -")
           sha1 = s.execute("git rev-parse #{@module_info.target_revision}").strip
           @rim_info = RimInfo.new
           @rim_info.remote_url = @module_info.remote_url

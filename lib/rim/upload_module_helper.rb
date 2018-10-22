@@ -137,7 +137,7 @@ private
   # copy files from given source revision into destination dir
   def copy_revision_files(src_session, src_sha1, dest_dir, ignores)
     Dir.mktmpdir do |tmp_dir|
-      src_session.execute("git archive --format tar #{src_sha1} #{@module_info.local_path} | tar -x -C #{tmp_dir}")
+      src_session.execute("git archive --format tar #{src_sha1} #{@module_info.local_path} | tar -C #{tmp_dir} -xf -")
       tmp_module_dir = File.join(tmp_dir, @module_info.local_path)
       files = FileHelper.find_matching_files(tmp_module_dir, false, "/**/*", File::FNM_DOTMATCH)
       files.delete(".")

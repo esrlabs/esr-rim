@@ -44,8 +44,8 @@ class Sync < Command
     opts.on("-m", "--message MESSAGE", String, "Message header to provide to each commit.") do |message|
       @message = message
     end
-    opts.on("-d", "--subdir SUBDIR", String, "Sync just a subdir from the remote module.") do |subdir|
-      @module_options[:subdir] = subdir
+    opts.on("-d", "--subdir [SUBDIR]", String, "Sync just a subdir from the remote module.") do |subdir|
+      @module_options[:subdir] = subdir || ''
     end
     opts.on("-s", "--split", "Create a separate commit for each module.") do
       @split = true
