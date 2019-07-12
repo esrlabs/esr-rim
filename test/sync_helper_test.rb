@@ -171,7 +171,7 @@ class SyncHelperTest < Minitest::Test
     cut.sync
     RIM::git_session(@ws_dir) do |s|
       s.execute("git rebase rim/testbr")
-      out = s.execute("git show --name-only")
+      out = s.execute("git show")
       assert out.include?("readme.txt")
       assert out.include?("Readme.txt")
     end

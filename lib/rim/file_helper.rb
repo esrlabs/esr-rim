@@ -40,8 +40,6 @@ class FileHelper
     FileUtils.mkdir_p(dir)
   end
   
-private
-  
   def self.normalize_patterns(patterns = [])
     if patterns.is_a?(String)
       return patterns.split(",").each do |p|

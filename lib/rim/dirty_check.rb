@@ -61,8 +61,15 @@ class DirtyCheck
       files.delete("..")
       # ignore the info file itself
       files.delete(RimInfo::InfoFileName)
-      # ignores defined by user
-      files -= FileHelper.find_matching_files(dir, false, mi.ignores)
+      # ignore all other files
+      # (note: in esr-rim <= 1.42 this was realized by Dir::glob, but this breaks if "dir" is
+      # changed during the check, e.g. by parallel unittest builds
+      # fnIgn is calculated like find_matching_files did it before to avoid problems
+      dirpath = Pathname.new(dir)
+      fnIgn = FileHelper.normalize_patterns(mi.ignores).map do |m|
+        Pathname.new(File.join(dir, m)).relative_path_from(dirpath).to_s
+      end
+      files.delete_if { |f| fnIgn.any?{|m| File.fnmatch(m, f, File::FNM_PATHNAME)} }
       # order of files makes a difference
       # sort to eliminate platform specific glob behavior
       files.sort!
