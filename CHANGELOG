@@ -139,3 +139,7 @@
 # 1.4.3
 
 * Fixed ignore-filter which could break if temporary files are created and deleted in parallel processes
+
+# 1.4.4
+
+* Fixed exception which results in ugly log output for Ruby >= 2.5

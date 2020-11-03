@@ -117,7 +117,7 @@ def each_module_parallel(task_desc, modules)
     (1..MaxThreads).each do
       Thread.new do
         loop do
-          i = index_queue.pop(true)
+          i = index_queue.empty? ? nil : index_queue.pop(true) 
           break if i.nil?
           result = []
           begin
