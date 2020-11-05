@@ -1,0 +1,17 @@
+name: verifier
+on: [pull_request]
+jobs:
+  run_tests:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        ruby-version: [2.7]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-ruby@v1
+          with:
+            ruby-version: ${{ matrix.ruby-version }}
+
+      - name: Run unit tests:
+        run: rake unit_tests
