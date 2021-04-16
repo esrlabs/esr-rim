@@ -9,6 +9,8 @@ class ModuleInfo
   attr_reader :local_path
   # target revision
   attr_reader :target_revision
+  # revision sha1
+  attr_reader :revision_sha1
   # ignores
   attr_reader :ignores
 
@@ -17,6 +19,7 @@ class ModuleInfo
   def initialize(remote_url,
                  local_path,
                  target_revision,
+                 revision_sha1 = nil,
                  ignores = nil,
                  remote_branch_format = nil,
                  subdir = nil)
@@ -24,6 +27,7 @@ class ModuleInfo
     @remote_branch_format = remote_branch_format
     @local_path = local_path
     @target_revision = target_revision
+    @revision_sha1 = revision_sha1
     @subdir = subdir
     if ignores.is_a?(String)
       @ignores = ignores.split(",").each do |s| 

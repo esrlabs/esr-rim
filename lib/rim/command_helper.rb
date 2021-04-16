@@ -32,11 +32,12 @@ class CommandHelper < Processor
     raise RimException.new("Unexpected command line arguments.") if !ARGV.empty?
   end
 
-  def create_module_info(remote_url, local_path, target_revision, ignores, subdir)
+  def create_module_info(remote_url, local_path, target_revision, revision_sha1, ignores, subdir)
     ModuleInfo.new(
         remote_url,
         get_relative_path(local_path),
         target_revision,
+        revision_sha1,
         ignores,
         remote_url ? get_remote_branch_format(remote_url) : nil,
         subdir)
@@ -70,6 +71,7 @@ class CommandHelper < Processor
         opts.has_key?(:remote_url) ? opts[:remote_url] : rim_info.remote_url,
         module_path,
         opts.has_key?(:target_revision) ? opts[:target_revision] : rim_info.target_revision,
+        opts.has_key?(:revision_sha1) ? opts[:revision_sha1] : rim_info.revision_sha1,
         opts.has_key?(:ignores) ? opts[:ignores] : rim_info.ignores,
         opts.has_key?(:subdir) ? opts[:subdir] : rim_info.subdir)
       if module_info.valid?
