@@ -38,6 +38,9 @@ class Sync < Command
     opts.on("-r", "--target-revision REVISION", String, "Set the target revision of the module.") do |target_revision|
       @module_options[:target_revision] = target_revision
     end
+    opts.on("--revision-sha1 SHA1", String, "Set the target SHA1 of the module.") do |revision_sha1|
+      @module_options[:revision_sha1] = revision_sha1
+    end
     opts.on("-i", "--ignore PATTERN_LIST", String, "Set the ignore patterns by specifying a comma separated list.") do |ignores|
       @module_options[:ignores] = ignores || ""
     end
@@ -70,6 +73,7 @@ class Sync < Command
             @module_options[:remote_url],
             local_path,
             @module_options[:target_revision],
+            @module_options[:revision_sha1],
             @module_options[:ignores],
             @module_options[:subdir],
         ))

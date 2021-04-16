@@ -51,7 +51,7 @@ class SyncHelperTest < Minitest::Test
 
   def test_files_are_synchronized_subtree
     mod_git_dir = create_all_module_git("mod_all")
-    mod_a_info =  RIM::ModuleInfo.new("file://" + mod_git_dir, "modules/a", "master", nil, nil, "mod_a")
+    mod_a_info =  RIM::ModuleInfo.new("file://" + mod_git_dir, "modules/a", "master", nil, nil, nil, "mod_a")
     create_ws_git("testbr")
     cut = RIM::SyncHelper.new(@ws_dir, @logger, [mod_a_info])
     cut.sync
@@ -70,7 +70,7 @@ class SyncHelperTest < Minitest::Test
 
   def test_files_are_synchronized_subtree_deep
     mod_git_dir = create_all_module_git("mod_all")
-    mod_a_info =  RIM::ModuleInfo.new("file://" + mod_git_dir, "modules/b_src", "master", nil, nil, "mod_b/src")
+    mod_a_info =  RIM::ModuleInfo.new("file://" + mod_git_dir, "modules/b_src", "master", nil, nil, nil, "mod_b/src")
     create_ws_git("testbr")
     cut = RIM::SyncHelper.new(@ws_dir, @logger, [mod_a_info])
     cut.sync

@@ -84,7 +84,7 @@ class SyncModuleHelperTest < Minitest::Test
     write_file(File.join(test_folder, "folder"), "file1")
     write_file(File.join(test_folder, "folder"), "file2")
     write_file(File.join(test_folder, "folder2"), "file1")
-    info = RIM::ModuleInfo.new(@remote_git_dir_url, "test", "testbr", "**/file2")
+    info = RIM::ModuleInfo.new(@remote_git_dir_url, "test", "testbr", nil, "**/file2")
     cut = RIM::SyncModuleHelper.new(@ws_dir, @ws_dir, info, @logger)
     cut.sync
     assert File.exists?(File.join(test_folder, "readme.txt"))

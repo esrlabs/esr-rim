@@ -81,7 +81,7 @@ class UploadHelperTest < Minitest::Test
 
   def test_files_of_new_commits_are_uploaded_subdir
     mod_git_dir = create_all_module_git("mod_all")
-    mod_a_info =  RIM::ModuleInfo.new("file://" + mod_git_dir, "modules/a", "master", nil, nil, "mod_a")
+    mod_a_info =  RIM::ModuleInfo.new("file://" + mod_git_dir, "modules/a", "master", nil, nil, nil, "mod_a")
     create_ws_git("testbr")
     sync_helper = RIM::SyncHelper.new(@ws_dir, @logger, [mod_a_info])
     sync_helper.sync
@@ -356,7 +356,7 @@ private
       s.execute("git commit -m \"Initial commit\"")
       s.execute("git checkout --detach #{branch}")
     end
-    return RIM::ModuleInfo.new("file://" + git_dir, name, branch, nil, remote_branch_format)
+    return RIM::ModuleInfo.new("file://" + git_dir, name, branch, nil, nil, remote_branch_format)
   end
 
   def create_all_module_git(name, branch = "master")

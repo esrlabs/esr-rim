@@ -31,6 +31,9 @@ module RIM
           if !s.rev_sha1(@module_info.target_revision)
             raise RimException.new("Unknown target revision '#{@module_info.target_revision}' for module '#{@module_info.local_path}'.")
           end
+          if @module_info.revision_sha1 && !s.rev_sha1(@module_info.revision_sha1)
+            raise RimException.new("Unknown target sha1 '#{@module_info.revision_sha1}' for module '#{@module_info.local_path}'.")
+          end
           local_path = File.join(@dest_root, @module_info.local_path)
           prepare_empty_folder(local_path, @module_info.ignores)
           temp_commit(d, "clear directory") if d.uncommited_changes?
@@ -40,7 +43,11 @@ module RIM
               strip = "--strip-components=#{depth}"
           end
           s.execute("git archive --format tar #{@module_info.target_revision} #{@module_info.subdir} | tar #{strip} -C #{local_path} -xf -")
-          sha1 = s.execute("git rev-parse #{@module_info.target_revision}").strip
+          sha1 = if @module_info.revision_sha1
+            s.execute("git rev-parse #{@module_info.revision_sha1}").strip
+          else
+            s.execute("git rev-parse #{@module_info.target_revision}").strip
+          end
           @rim_info = RimInfo.new
           @rim_info.remote_url = @module_info.remote_url
           @rim_info.target_revision = @module_info.target_revision
