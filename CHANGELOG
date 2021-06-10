@@ -146,4 +146,8 @@
 
 # 1.4.5
 
+* Wrong build: deprecated
+
+# 1.4.6
+
 * Fixed issue #28: rim sync is not working in root of destination repository
