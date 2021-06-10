@@ -32,7 +32,7 @@ module RIM
             raise RimException.new("Unknown target revision '#{@module_info.target_revision}' for module '#{@module_info.local_path}'.")
           end
           local_path = File.join(@dest_root, @module_info.local_path)
-          prepare_empty_folder(local_path, @module_info.ignores)
+          prepare_empty_folder(local_path, [*@module_info.ignores, ".git/**/*"])
           temp_commit(d, "clear directory") if d.uncommited_changes?
           strip = ""
           if @module_info.subdir

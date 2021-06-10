@@ -143,3 +143,7 @@
 # 1.4.4
 
 * Fixed exception which results in ugly log output for Ruby >= 2.5
+
+# 1.4.5
+
+* Fixed issue #28: rim sync is not working in root of destination repository

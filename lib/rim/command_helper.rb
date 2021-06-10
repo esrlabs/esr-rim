@@ -27,7 +27,7 @@ class CommandHelper < Processor
   def check_ready
     raise RimException.new("The workspace git contains uncommitted changes.") if !local_changes?(@ws_root)
   end
-  
+
   def check_arguments
     raise RimException.new("Unexpected command line arguments.") if !ARGV.empty?
   end
@@ -49,7 +49,7 @@ class CommandHelper < Processor
     end
     true
   end
-  
+
   def modules_from_paths(paths, opts = {})
     if paths.empty?
       module_from_path(nil, opts)
@@ -61,7 +61,7 @@ class CommandHelper < Processor
       raise RimException.new("Multiple modules cannot be used with URL option.")
     end
   end
-  
+
   def module_from_path(path, opts = {})
     module_path = find_file_dir_in_workspace(path || ".", RimInfo::InfoFileName)
     if module_path
@@ -79,10 +79,10 @@ class CommandHelper < Processor
         raise RimException.new("Invalid .riminfo file found in directory '#{module_path}'.")
       end
     else
-      raise RimException.new(path ? "No module info found in '#{path}'." : "No module info found.") 
+      raise RimException.new(path ? "No module info found in '#{path}'." : "No module info found.")
     end
   end
-  
+
   def module_paths(paths, exclude_paths = nil)
     module_paths = []
     (paths.empty? ? ['.'] : paths).each do |p|
@@ -98,11 +98,11 @@ class CommandHelper < Processor
     end
     module_paths.sort
   end
-  
+
   def all_module_paths_from_path(path)
     Dir.glob(File.join(path, "**/.riminfo")).map { |f| Pathname.new(File.expand_path(File.dirname(f))).relative_path_from(Pathname.pwd).to_s }
   end
-  
+
   def add_unique_module_info(module_info)
     if !@paths.include?(module_info.local_path)
       @paths.push(module_info.local_path)
@@ -119,19 +119,20 @@ class CommandHelper < Processor
 
   def find_file_dir_in_workspace(start_dir, file)
     path = File.expand_path(start_dir)
-    while path != @ws_root
+    loop do
       if File.exist?(File.join(path, file))
         return path
-      else
+      elsif path != @ws_root
         parent = File.dirname(path)
         if parent != path
           path = parent
         else
-          break
+          return nil
         end
-      end 
+      else
+        return nil
+      end
     end
-    nil
   end
 
 protected
