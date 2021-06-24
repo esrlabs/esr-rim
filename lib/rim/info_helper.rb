@@ -23,7 +23,11 @@ class InfoHelper < CommandHelper
     @module_helpers.each do |h|
       path = h.module_info.local_path.split(/[\\\/]/).last.ljust(40)
       info = "#{path}: ->#{h.target_rev.ljust(10)} @#{h.current_sha1[0..6]}"
-      if h.upstream_revs
+
+      if (!h.current_commit_exists)
+        info += " [COMMIT NOT FOUND]"
+        @logger.info(info)
+      elsif h.upstream_revs
         if h.upstream_revs.size > 0
           info += " [#{h.upstream_revs.size} commits behind]"
         else

@@ -5,6 +5,7 @@ module RIM
 class InfoModuleHelper < ModuleHelper
 
   attr_accessor :target_rev
+  attr_accessor :current_commit_exists
   attr_accessor :current_sha1
   attr_accessor :upstream_revs
   attr_accessor :upstream_non_fast_forward
@@ -19,6 +20,10 @@ class InfoModuleHelper < ModuleHelper
     @target_rev = rim_info.target_revision
     @current_sha1 = rim_info.revision_sha1
     RIM::git_session(git_path) do |s|
+      if s.commit_exists?(current_sha1)
+        @current_commit_exists = true
+      end
+
       if s.has_remote_branch?(target_rev)
         # repository is mirrored so branches are "local"
         if s.is_ancestor?(current_sha1, target_rev)

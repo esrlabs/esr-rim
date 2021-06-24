@@ -151,3 +151,7 @@
 # 1.4.6
 
 * Fixed issue #28: rim sync is not working in root of destination repository
+
+# 1.4.7
+
+* Added a notification in `rim info` in case the current SHA1 is not an existing commit

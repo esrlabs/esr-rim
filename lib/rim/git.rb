@@ -98,6 +98,13 @@ class GitSession
     end
     nil
   end
+
+  # check whether a commit exists
+  def commit_exists?(sha)
+    execute("git rev-parse --quiet --verify #{sha}^{commit}") do |b, e|
+      return !e
+    end
+  end
   
   # check whether branch exists
   def has_branch?(branch)
