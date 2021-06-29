@@ -155,3 +155,7 @@
 # 1.4.7
 
 * Added a notification in `rim info` in case the current SHA1 is not an existing commit
+
+# 1.4.8
+
+* Fixed exception while reading empty .riminfo files
