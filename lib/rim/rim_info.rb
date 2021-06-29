@@ -87,6 +87,8 @@ class RimInfo
       if attrs[:subdir] == ""
         attrs[:subdir] = nil
       end
+    else
+      return true
     end
     AttrsDef.each do |a|
       send("#{a}=".to_sym, attrs[a])
