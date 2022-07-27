@@ -42,7 +42,7 @@ class StatusBuilder
       end
     else
       # remote revs are where we stop traversal
-      git_session.all_reachable_non_remote_revs(rev).each do |r| 
+      git_session.all_reachable_non_remote_revs(rev).each do |r|
         relevant_revs[r] = true
       end
     end
@@ -57,7 +57,7 @@ class StatusBuilder
     mod_stats = []
     # export all relevant modules at once
     # this makes status calculation significantly faster compared
-    # to exporting each module separately 
+    # to exporting each module separately
     # (e.g. 1.0s instead of 1.5s on linux for a commit with 20 modules)
     git_session.within_exported_rev(rev, mod_dirs) do |d|
       mod_dirs.each do |rel_path|
@@ -86,7 +86,7 @@ class StatusBuilder
   def fs_status(dir)
     RevStatus.new(
       fs_rim_dirs(dir).collect { |d|
-        build_module_status(dir, d) 
+        build_module_status(dir, d)
       })
   end
 
@@ -107,7 +107,7 @@ class StatusBuilder
   end
 
   # building of the status of an ancestor chain works by checking
-  # the dirty state of modules only when any files affecting some module 
+  # the dirty state of modules only when any files affecting some module
   # were changed; otherwise the status of the module in the ancestor is assumed
   #
   # for this to work, the chain must be walked from older commit to newer ones
@@ -130,7 +130,7 @@ class StatusBuilder
         # note that it's not really important, which one we choose
         # just make sure to use the same commit when checking for changed files
         base_stat = parent_stats.first
-        
+
         changed_files = gs.changed_files(rev, parent_revs.first)
 
         # build list of modules in this commit
@@ -146,7 +146,7 @@ class StatusBuilder
         end
 
         # a module needs to be checked if any of the files within were touched
-        check_dirs = module_dirs.select{|d| changed_files.any?{|f| f.path.start_with?(d)} }
+        check_dirs = module_dirs.select{|d| changed_files.any?{|f| f.path.start_with?(File.join(d, ""))} }
 
         module_stats = []
         # check out all modules to be checked at once

@@ -159,3 +159,7 @@
 # 1.4.8
 
 * Fixed exception while reading empty .riminfo files
+
+# 1.4.9
+
+* Fixed issue #31: rim status is checking untouched modules
