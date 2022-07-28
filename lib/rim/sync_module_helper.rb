@@ -92,9 +92,7 @@ module RIM
       text = out.gsub(/warning:.*will be replaced.*\r?\n.*\r?\n/, '')
       out.gsub(/warning:.*will be replaced.*\r?\n.*\r?\n/, '').split(/\r?\n/).each do |l|
         if first_line && !l.include?(".gitignore")
-          puts "Unexpected behaviour while parsing:"
-          puts text
-          raise e || RimException.new("Cannot parse ignored files after git add:\n#{out}")
+          raise text || RimException.new("Cannot parse ignored files after git add:\n#{out}")
         end
         if File.exist?(File.expand_path(l, session.execute_dir))
           ignored_line = GitSession::Status::Line.new
