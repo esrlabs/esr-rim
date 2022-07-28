@@ -24,6 +24,7 @@ jobs:
         run: |
           git config --global user.email "test@example.com"
           git config --global user.name "Test User"
+          git config --global core.autocrlf false
 
       - name: Run unit tests
         run: rake unit_tests
