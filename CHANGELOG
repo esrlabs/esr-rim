@@ -163,3 +163,7 @@
 # 1.4.9
 
 * Fixed issue #31: rim status is checking untouched modules
+
+# 1.4.10
+
+* Fixed issue #35: rim sync fails on Windows
