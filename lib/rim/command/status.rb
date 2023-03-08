@@ -93,6 +93,11 @@ class Status < Command
       @logger.info headline
       dirty_mods.each do |m|
         @logger.info "        - #{m.dir}"
+        gs.changed_files(stat.git_rev).each do |changed|
+          if changed.path.start_with?(m.dir)
+            @logger.info "           #{changed.kind}: #{changed.path}"
+          end
+        end
       end
     elsif dirty_mods.size > 0
       @logger.info "#{headline} (#{dirty_mods.size} modules dirty)"
