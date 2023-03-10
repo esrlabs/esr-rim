@@ -28,10 +28,20 @@ class FileHelper
     files.sort.uniq
   end
   
-  def self.remove_empty_dirs(dir, exclude = ".")
+  def self.find_empty_dirs(dir, exclude = ".")
     exclude = File.join(File.expand_path(exclude), "") if exclude
+    dirs = []
     Dir.glob(File.join(dir, "/*/**/")).reverse_each do |d|
-      Dir.rmdir d if Dir.entries(d).size == 2 && (!exclude || !exclude.start_with?(d))
+      if Dir.entries(d).size == 2 && (!exclude || !exclude.start_with?(d))
+        dirs << d
+      end
+    end
+    dirs
+  end
+  
+    def self.remove_empty_dirs(dir, exclude = ".")
+    find_empty_dirs(dir, exclude).each do |d|
+      Dir.rmdir(d)
     end
   end
   

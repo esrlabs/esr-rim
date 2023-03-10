@@ -1,6 +1,7 @@
 require 'rim/command_helper'
 require 'rim/sync_module_helper'
 require 'rim/status_builder'
+require 'rim/file_helper'
 require 'tempfile'
 require 'fileutils'
 
@@ -42,6 +43,8 @@ class SyncHelper < CommandHelper
         remote_url = "file://" + @ws_root
         @logger.debug("Folder for temporary git repositories: #{@rim_path}")
         tmpdir = clone_or_fetch_repository(remote_url, module_tmp_git_path(".ws"), "Cloning workspace git...")
+        add_empty_dirs_to_ignore(tmpdir)
+        # puts create_module_info(empty_dirs)
         RIM::git_session(tmpdir) do |tmp_session|
           tmp_session.execute("git reset --hard")
           tmp_session.execute("git clean -xdf")
@@ -87,6 +90,22 @@ private
       end
     end
     changed_modules
+  end
+
+  def add_empty_dirs_to_ignore(tmpdir)
+    empty_dirs = []
+    while !FileHelper.find_empty_dirs(tmpdir).empty? do
+      new_empty_dirs = FileHelper.remove_empty_dirs(tmpdir)
+      new_empty_dirs.each do |new_dir|
+        empty_dirs.delete_if {|old_dir| old_dir.start_with?(new_dir)}
+      end
+      empty_dirs.concat(new_empty_dirs)
+    end
+    @module_infos.each do |m|
+      empty_dirs.each do |d|
+        m.ignores << d.delete_prefix(tmpdir + "/" + m.local_path + "/")
+      end
+    end
   end
 
   # get latest revision from which all parent revisions are clean 
